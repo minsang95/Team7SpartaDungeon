@@ -121,6 +121,8 @@ namespace Team7SpartaDungeon
                         player = new Warrior();
                         player.Skill.Add("알파 스트라이크 - MP 10\n   공격력 * 2 로 하나의 적을 공격합니다."); // 전사 1번 스킬 추가
                         player.AvailableSkill.Add(true);
+                        player.Skill.Add("더블 스트라이크 - MP 15\n   공격력 * 1.5 로 2명의 적을 랜덤으로 공격합니다."); // 전사 2번 스킬 추가
+                        player.AvailableSkill.Add(true);
                         break;
                     case 2:
                         player = new Wizard();
@@ -252,7 +254,7 @@ namespace Team7SpartaDungeon
                         }
                         else
                         {
-                            Console.WriteLine("잘못된 입력입니다.\n\nEnter. 다음");
+                            Console.WriteLine("Dead 상태의 몬스터는 공격할 수 없습니다.\n\nEnter. 다음");
                             Console.ReadLine();
                         }
                     }
@@ -277,7 +279,7 @@ namespace Team7SpartaDungeon
                     }
                     Console.WriteLine("사용할 스킬을 선택해주세요.");
                     int use = ChoiceInput(1, player.Skill.Count);
-                    if (use == 1 && player.AvailableSkill[use - 1]) // 1번 스킬 // 알파 스트라이크 - MP 10, 공격력 * 2 로 하나의 적을 공격합니다.
+                    if (use == 1 && player.AvailableSkill[use - 1]) // 전사 1번 스킬 // 알파 스트라이크 - MP 10, 공격력 * 2 로 하나의 적을 공격합니다.
                     {
                         if (10 < player.Mp)
                         {
@@ -303,7 +305,7 @@ namespace Team7SpartaDungeon
                                 }
                                 else
                                 {
-                                    Console.WriteLine("잘못된 입력입니다.\n\nEnter. 다음");
+                                    Console.WriteLine("Dead 상태의 몬스터는 공격할 수 없습니다.\n\nEnter. 다음");
                                     Console.ReadLine();
                                 }
                             }
@@ -315,6 +317,29 @@ namespace Team7SpartaDungeon
                         }
                     }
                     else if(use == 1)
+                    {
+                        Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
+                        Console.ReadLine();
+                    }
+                    if(use == 2 && player.AvailableSkill[use-1]) // 전사 2번 스킬 // 더블 스트라이크 - MP 15, 공격력 * 1.5 로 2명의 적을 랜덤으로 공격합니다.
+                    {
+                        if(15 < player.Mp)
+                        {
+                            int atk1 = r.Next(0, monsters.Count); int atk2;
+                            while (true)
+                            {
+                                atk2 = r.Next(0, monsters.Count);
+                                if (atk1 != atk2) break;
+                            }
+                            int hp1 = monsterHp[atk1];int hp2 = monsterHp[atk2];
+                        }
+                        else
+                        {
+                            Console.WriteLine("MP 가 부족합니다.\n\nEnter. 다음");
+                            Console.ReadLine();
+                        }
+                    }
+                    else if(use == 2)
                     {
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
