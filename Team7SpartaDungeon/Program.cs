@@ -107,24 +107,20 @@ namespace Team7SpartaDungeon
                 player.Name = Console.ReadLine();    // 플레이어 이름 입력
                 while (true)
                 {
-                    int choice = Choice();
-                    if (choice == 1)
+                    Console.Clear();
+                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작");
+                    switch (ChoiceInput(1, 2, "잘못된 입력입니다.\n1. 상태보기 2.전투 시작")) // 최초 선택지
                     {
-                        Status();
-                    }
-                    if (choice == 2)
-                    {
-                        BattleStart();
+                        case 1:
+                            Status();
+                            break;
+                        case 2:
+                            BattleStart();
+                            break;
                     }
                 }
             }
-            public int Choice() // 0. 마을 선택지
-            {
-                Console.Clear();
-                Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\r\n이제 전투를 시작할 수 있습니다.");
-                Console.WriteLine("\n1. 상태 보기\n2. 전투 시작");
-                return ChoiceInput(1, 2, "잘못된 입력입니다.\n1. 상태보기 2.전투 시작");
-            }
+
             public void Status() // 1. 상태 보기
             {
                 Console.Clear();
@@ -152,10 +148,13 @@ namespace Team7SpartaDungeon
 
                 while (0 < player.Hp) // 전투 시작 플레이어 턴
                 {
-                    int choice = ChoiceAction();
-                    if (choice == 1)
+                    BattleField();
+                    Console.WriteLine("\n\n1. 공격");
+                    switch (ChoiceInput(1, 1, "잘못된 입력입니다.\n1. 공격"))
                     {
-                        Attack();
+                        case 1:
+                            Attack();
+                            break;
                     }
                     if (CheckMonsters()) break;
                 }
@@ -180,14 +179,6 @@ namespace Team7SpartaDungeon
                         }
                     }
                     Console.WriteLine($"\n\n   [내정보]\n\n   Lv.{player.Level} {player.Name} ({player.Class})\n   Hp {player.Hp}/{player.MaxHp}");
-                }
-
-                int ChoiceAction() // 플레이어 턴 선택지
-                {
-                    BattleField();
-                    Console.WriteLine("\n\n1. 공격");
-                    int choice = ChoiceInput(1, 1, "잘못된 입력입니다.\n1. 공격");
-                    return choice;
                 }
 
                 void Attack() // 플레이어 공격
