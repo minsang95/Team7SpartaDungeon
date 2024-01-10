@@ -294,8 +294,8 @@ namespace Team7SpartaDungeon
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("   You Lose\n\n");
                     Console.ResetColor();
-                    Console.WriteLine($"Lv. {player.Level} {player.Name}\nHP {beforeHp} -> 0\n\n");
-                    Console.WriteLine("Enter. 다음");
+                    Console.WriteLine($"Lv. {player.Level} {player.Name}\nGold {player.Gold} - > 0\nExp {player.Exp} -> 0\n\n");
+                    Console.WriteLine("마을로 돌아가 체력을 회복하였습니다.\n\nEnter. 다음");
                     Console.ReadLine();
                     player.Hp = player.MaxHp;
                     player.Gold = 0;
