@@ -5,29 +5,53 @@ namespace Team7SpartaDungeon
 {
     internal class Program
     {
-//----- 플레이어 직업, 몬스터, 아이템 참조 -----------------------------------------------------------------------------------------
-        struct Warrior
+        //----- 플레이어 직업, 몬스터, 아이템 참조 -----------------------------------------------------------------------------------------
+        public class Player
         {
             public string Name { get; set; }
-            public string Class { get; }
+            public string Class { get; set; }
             public int Level { get; set; }
             public float Atk { get; set; }
             public int Def { get; set; }
             public int MaxHp { get; set; }
             public int Hp { get; set; }
+            public int MaxMp { get; set; }
             public int Mp { get; set; }
             public int Gold { get; set; }
             public int Exp { get; set; }
+        }
+
+        public class Warrior : Player
+        {
             public Warrior()
             {
-                Name = "name";
+                Name = "이름";
                 Class = "전사";
                 Level = 1;
                 Atk = 10;
                 Def = 5;
                 MaxHp = 100;
                 Hp = 100;
+                MaxMp = 50;
                 Mp = 50;
+                Gold = 1500;
+                Exp = 0;
+            }
+        }
+
+        public class Wizard : Player
+        {
+            public Wizard()
+            {
+                Name = "이름";
+                Class = "마법사";
+                Level = 1;
+                Atk = 5;
+                Def = 0;
+                MaxHp = 80;
+                Hp = 80;
+                MaxMp = 100;
+                Mp = 100;
                 Gold = 1500;
                 Exp = 0;
             }
@@ -59,7 +83,7 @@ namespace Team7SpartaDungeon
         public class SpartaDungeon
         {
             // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
-            Warrior player = new Warrior();
+            Player player = new Player();
             Monster minion = new Monster("미니언", 2, 10, 0, 15);
             Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25);
             Monster voidBug = new Monster("공허충", 3, 15, 0, 10);
@@ -69,11 +93,21 @@ namespace Team7SpartaDungeon
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
-                Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 이름을 설정해주세요.");
+                Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사");
+                switch(ChoiceInput(1, 2, "잘못된 입력입니다.\n1. 전사  2. 마법사")) // 직업 선택
+                {
+                    case 1:
+                        player = new Warrior();
+                        break;
+                    case 2:
+                        player = new Wizard();
+                        break;
+                }
+                Console.WriteLine("원하시는 이름을 설정해주세요.");
                 player.Name = Console.ReadLine();    // 플레이어 이름 입력
                 while (true)
                 {
-                    int choice = Choice0();
+                    int choice = Choice();
                     if (choice == 1)
                     {
                         Status();
@@ -84,7 +118,7 @@ namespace Team7SpartaDungeon
                     }
                 }
             }
-            public int Choice0() // 0. 마을 선택지
+            public int Choice() // 0. 마을 선택지
             {
                 Console.Clear();
                 Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\r\n이제 전투를 시작할 수 있습니다.");
