@@ -5,7 +5,7 @@ namespace Team7SpartaDungeon
 {
     internal class Program
     {
-        //----- 플레이어 직업, 몬스터, 아이템 참조 -----------------------------------------------------------------------------------------
+        //----- 플레이어 직업, 몬스터, 아이템 참조 ---------------------------------------------------------------------------------
         public class Player
         {
             public string Name { get; set; }
@@ -19,6 +19,8 @@ namespace Team7SpartaDungeon
             public int Mp { get; set; }
             public int Gold { get; set; }
             public int Exp { get; set; }
+            public List<bool> AvailableSkill {  get; set; }
+            public List<string> Skill {  get; set; }
         }
 
         public class Warrior : Player
@@ -36,6 +38,8 @@ namespace Team7SpartaDungeon
                 Mp = 50;
                 Gold = 1500;
                 Exp = 0;
+                AvailableSkill = new List<bool>();
+                Skill = new List<string>();
             }
         }
 
@@ -54,6 +58,8 @@ namespace Team7SpartaDungeon
                 Mp = 100;
                 Gold = 1500;
                 Exp = 0;
+                AvailableSkill = new List<bool>();
+                Skill = new List<string>();
             }
         }
 
@@ -113,6 +119,8 @@ namespace Team7SpartaDungeon
                 {
                     case 1:
                         player = new Warrior();
+                        player.Skill.Add("알파 스트라이크 - MP 10\n   공격력 * 2 로 하나의 적을 공격합니다."); // 전사 1번 스킬 추가
+                        player.AvailableSkill.Add(true);
                         break;
                     case 2:
                         player = new Wizard();
@@ -142,7 +150,7 @@ namespace Team7SpartaDungeon
                 Console.WriteLine($"캐릭터의 정보가 표시됩니다.\n\n" +
                                   $" 이름   : {player.Name}\n"+
                                   $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n" +
-                                  $" 체 력  : {player.Hp}/{player.MaxHp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.Level}\n\n" +
+                                  $" 체 력  : {player.Hp}/{player.MaxHp}\n 마 력  : {player.Mp}/{player.MaxMp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.Level}\n\n" +
                                   $"Enter. 나가기");
                 Console.ReadLine();
             }
@@ -151,6 +159,7 @@ namespace Team7SpartaDungeon
                 List<Monster> monsters = new List<Monster>(); // 몬스터 리스트 monsters 생성
                 Random r = new Random();
                 int beforeHp = player.Hp;
+                int beforeMp = player.Mp;
                 for (int i = 0; i < r.Next(1, 5); i++)
                 {
                     monsters.Add(dungeon[r.Next(0, 3)]);      // 몬스터 리스트 monsters 에 게임시작시 만들어둔 몬스터 리스트 dungeon 에 저장된 몬스터 랜덤 추가
@@ -196,12 +205,11 @@ namespace Team7SpartaDungeon
                             Console.ResetColor();
                         }
                     }
-                    Console.WriteLine($"\n\n   [내정보]\n\n   Lv.{player.Level} {player.Name} ({player.Class})\n   Hp {player.Hp}/{player.MaxHp}");
+                    Console.WriteLine($"\n\n   [내정보]\n\n   Lv.{player.Level} {player.Name} ({player.Class})\n   HP {player.Hp}/{player.MaxHp}\n   MP {player.Mp}/{player.MaxMp}");
                 }
 
-                void Attack() // 플레이어 공격
+                void MonsterNumber() // 몬스터 번호 출력 메서드
                 {
-                    BattleField();
                     Console.SetCursorPosition(0, 3);
                     for (int i = 0; i < monsters.Count; i++)
                     {
@@ -219,6 +227,12 @@ namespace Team7SpartaDungeon
                         }
                     }
                     Console.SetCursorPosition(0, 11 + monsters.Count);
+                }
+
+                void Attack() // 플레이어 공격
+                {
+                    BattleField();
+                    MonsterNumber();
                     Console.WriteLine("0. 취소\n\n대상을 선택해주세요.");
                     int atk = ChoiceInput(0, monsters.Count);
                     if (!(atk == 0))
@@ -226,9 +240,9 @@ namespace Team7SpartaDungeon
                         if (0 < monsterHp[atk - 1])
                         {
                             int bh = monsterHp[atk - 1];
+                            monsterHp[atk - 1] -= r.Next((int)Math.Ceiling(player.Atk * 0.9f), (int)Math.Ceiling(player.Atk * 1.1f) + 1); // 플레이어 공격 데미지
                             BattleField();
                             Console.WriteLine($"\n\n{player.Name} 의 공격!\n");
-                            monsterHp[atk - 1] -= r.Next((int)Math.Ceiling(player.Atk * 0.9f), (int)Math.Ceiling(player.Atk * 1.1f)+1); // 플레이어 공격 데미지
                             Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk - 1]}]");
                             if (monsterHp[atk - 1] <= 0)
                                 Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
@@ -246,20 +260,78 @@ namespace Team7SpartaDungeon
 
                 void Skill()
                 {
-
+                    BattleField();
+                    Console.WriteLine("\n");
+                    for (int i = 0; i < player.Skill.Count; i++)
+                    {
+                        if (player.AvailableSkill[i])
+                        {
+                            Console.WriteLine($"{i + 1}. {player.Skill[i]}\n");
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkGray;
+                            Console.WriteLine($"{i + 1}. {player.Skill[i]}\n");
+                            Console.ResetColor();
+                        }
+                    }
+                    Console.WriteLine("사용할 스킬을 선택해주세요.");
+                    int use = ChoiceInput(1, player.Skill.Count);
+                    if (use == 1 && player.AvailableSkill[use - 1]) // 1번 스킬 // 알파 스트라이크 - MP 10, 공격력 * 2 로 하나의 적을 공격합니다.
+                    {
+                        if (10 < player.Mp)
+                        {
+                            BattleField();
+                            MonsterNumber();
+                            Console.WriteLine("0. 취소\n\n대상을 선택해주세요.");
+                            int atk = ChoiceInput(0, monsters.Count);
+                            if (!(atk == 0))
+                            {
+                                if (0 < monsterHp[atk - 1])
+                                {
+                                    int bh = monsterHp[atk - 1];
+                                    player.Mp -= 10;
+                                    monsterHp[atk - 1] -= (int)Math.Ceiling(player.Atk * 2); //  알파 스트라이크 데미지
+                                    BattleField();
+                                    Console.WriteLine($"\n\n{player.Name} 의 알파 스트라이크!\n");
+                                    Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk - 1]}]");
+                                    if (monsterHp[atk - 1] <= 0)
+                                        Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
+                                    Console.WriteLine("\n\nEnter. 다음");
+                                    Console.ReadLine();
+                                    if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                }
+                                else
+                                {
+                                    Console.WriteLine("잘못된 입력입니다.\n\nEnter. 다음");
+                                    Console.ReadLine();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Mp 가 부족합니다.\n\nEnter. 다음");
+                            Console.ReadLine();
+                        }
+                    }
+                    else if(use == 1)
+                    {
+                        Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
+                        Console.ReadLine();
+                    }
                 }
 
                 void EnemyPhase() // 몬스터 턴, 몬스터 행동
                 {
                     for(int i = 0; i < monsters.Count; i++)
                     {
-                        BattleField();
                         int befHp = player.Hp;
                         int damage = monsters[i].Atk - player.Def;    // 몬스터 데미지
                         if (damage < 0) damage = 0;
                         if (0 < monsterHp[i])
                         {
                             player.Hp -= damage;
+                            BattleField();
                             Console.SetCursorPosition(0, 3+i);
                             Console.WriteLine($"▶");
                             Console.SetCursorPosition(0, 11 + monsters.Count);
@@ -304,7 +376,7 @@ namespace Team7SpartaDungeon
                     Console.WriteLine("   Victory\n\n");
                     Console.ResetColor();
                     Console.WriteLine($"던전에서 몬스터 {monsters.Count}마리를 잡았습니다.\n\n");
-                    Console.WriteLine($"Lv. {player.Level} {player.Name}\nHP {beforeHp} -> {player.Hp}\n\n");
+                    Console.WriteLine($"Lv. {player.Level} {player.Name}\nHP {beforeHp} -> {player.Hp}\nMP {beforeMp} -> {player.Mp}\n\n");
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
                 }
@@ -318,9 +390,10 @@ namespace Team7SpartaDungeon
                     Console.WriteLine("   You Lose\n\n");
                     Console.ResetColor();
                     Console.WriteLine($"Lv. {player.Level} {player.Name}\nGold {player.Gold} - > 0\nExp {player.Exp} -> 0\n\n");
-                    Console.WriteLine("마을로 돌아가 체력을 회복하였습니다.\n\nEnter. 다음");
+                    Console.WriteLine("마을로 돌아가 체력과 마나를 회복하였습니다.\n\nEnter. 다음");
                     Console.ReadLine();
                     player.Hp = player.MaxHp;
+                    player.Mp = player.MaxMp;
                     player.Gold = 0;
                     player.Exp = 0;
                 }
