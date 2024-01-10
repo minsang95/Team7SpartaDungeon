@@ -94,7 +94,7 @@ namespace Team7SpartaDungeon
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
                 Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사");
-                switch(ChoiceInput(1, 2, "잘못된 입력입니다.\n1. 전사  2. 마법사")) // 직업 선택
+                switch(ChoiceInput(1, 2)) // 직업 선택
                 {
                     case 1:
                         player = new Warrior();
@@ -109,7 +109,7 @@ namespace Team7SpartaDungeon
                 {
                     Console.Clear();
                     Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작");
-                    switch (ChoiceInput(1, 2, "잘못된 입력입니다.\n1. 상태보기 2.전투 시작")) // 최초 선택지
+                    switch (ChoiceInput(1, 2)) // 최초 선택지
                     {
                         case 1:
                             Status();
@@ -149,11 +149,14 @@ namespace Team7SpartaDungeon
                 while (0 < player.Hp) // 전투 시작 플레이어 턴
                 {
                     BattleField();
-                    Console.WriteLine("\n\n1. 공격");
-                    switch (ChoiceInput(1, 1, "잘못된 입력입니다.\n1. 공격"))
+                    Console.WriteLine("\n\n1. 공격\n2. 스킬");
+                    switch (ChoiceInput(1, 2))
                     {
                         case 1:
                             Attack();
+                            break;
+                        case 2:
+                            Skill();
                             break;
                     }
                     if (CheckMonsters()) break;
@@ -202,7 +205,7 @@ namespace Team7SpartaDungeon
                     }
                     Console.SetCursorPosition(0, 11 + monsters.Count);
                     Console.WriteLine("0. 취소\n\n대상을 선택해주세요.");
-                    int atk = ChoiceInput(0, monsters.Count, "잘못된 입력입니다.\n0. 취소");
+                    int atk = ChoiceInput(0, monsters.Count);
                     if (!(atk == 0))
                     {
                         if (0 < monsterHp[atk - 1])
@@ -224,6 +227,11 @@ namespace Team7SpartaDungeon
                             Console.ReadLine();
                         }
                     }
+                }
+
+                void Skill()
+                {
+
                 }
 
                 void EnemyPhase() // 몬스터 턴, 몬스터 행동
@@ -302,13 +310,17 @@ namespace Team7SpartaDungeon
                     player.Exp = 0;
                 }
             }
-            public int ChoiceInput(int limit, int limit2, string action) // 선택지 입력 메서드
+            public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
+                Console.WriteLine();
+                int cp = Console.CursorTop;
                 string input = Console.ReadLine();
                 int choice;
-                while (!(int.TryParse(input, out choice)) || choice < limit || choice > limit2)
+                while (!(int.TryParse(input, out choice)) || choice < fst || choice > last)
                 {
-                    Console.WriteLine(action);
+                    Console.SetCursorPosition(0, cp);
+                    Console.WriteLine("잘못된 입력입니다.");
+                    Console.Write("                    \r");
                     input = Console.ReadLine();
                 }
                 return choice;
