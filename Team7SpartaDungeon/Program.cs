@@ -164,7 +164,7 @@ namespace Team7SpartaDungeon
                 int beforeMp = player.Mp;
                 for (int i = 0; i < r.Next(1, 5); i++)
                 {
-                    monsters.Add(dungeon[r.Next(0, 3)]);      // 몬스터 리스트 monsters 에 게임시작시 만들어둔 몬스터 리스트 dungeon 에 저장된 몬스터 랜덤 추가
+                    monsters.Add(dungeon[r.Next(0, dungeon.Count)]);      // 몬스터 리스트 monsters 에 게임시작시 만들어둔 몬스터 리스트 dungeon 에 저장된 몬스터 랜덤 추가
                 }
                 int[] monsterHp = new int[monsters.Count];
                 for (int i = 0; i < monsters.Count; i++)
@@ -174,7 +174,7 @@ namespace Team7SpartaDungeon
 
                 while (0 < player.Hp) // 전투 시작 플레이어 턴
                 {
-                    BattleField();
+                    BattleField(); 
                     Console.WriteLine("\n\n1. 공격\n2. 스킬");
                     switch (ChoiceInput(1, 2))
                     {
@@ -325,13 +325,44 @@ namespace Team7SpartaDungeon
                     {
                         if(15 < player.Mp)
                         {
-                            int atk1 = r.Next(0, monsters.Count); int atk2;
-                            while (true)
+                            if(2 <= monsters.Count)
                             {
-                                atk2 = r.Next(0, monsters.Count);
-                                if (atk1 != atk2) break;
+                                int atk1 = r.Next(0, monsters.Count); int atk2;
+                                while (true)
+                                {
+                                    atk2 = r.Next(0, monsters.Count);
+                                    if (atk1 != atk2) break;
+                                }
+                                int hp1 = monsterHp[atk1]; int hp2 = monsterHp[atk2];
+                                player.Mp -= 15;
+                                monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 1.5);
+                                monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 1.5);
+                                BattleField();
+                                Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
+                                Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]");
+                                Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]");
+                                if (monsterHp[atk1] <= 0)
+                                    Console.WriteLine($"\nLv.{monsters[atk1].Level} {monsters[atk1].Name}\nHP {hp1} -> Dead");
+                                if (monsterHp[atk2] <= 0)
+                                    Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name}\nHP {hp2} -> Dead");
+                                Console.WriteLine("\n\nEnter. 다음");
+                                Console.ReadLine();
+                                if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                             }
-                            int hp1 = monsterHp[atk1];int hp2 = monsterHp[atk2];
+                            else
+                            {
+                                int bh = monsterHp[0];
+                                player.Mp -= 15;
+                                monsterHp[0] -= (int)Math.Ceiling(player.Atk * 1.5);
+                                BattleField();
+                                Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
+                                Console.WriteLine($"Lv.{monsters[0].Level} {monsters[0].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[0]}]");
+                                if (monsterHp[0] <= 0)
+                                    Console.WriteLine($"\nLv.{monsters[0].Level} {monsters[0].Name}\nHP {bh} -> Dead");
+                                Console.WriteLine("\n\nEnter. 다음");
+                                Console.ReadLine();
+                                if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                            }
                         }
                         else
                         {
