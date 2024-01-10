@@ -88,6 +88,21 @@ namespace Team7SpartaDungeon
             Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25);
             Monster voidBug = new Monster("공허충", 3, 15, 0, 10);
             List<Monster> dungeon = new List<Monster>();
+            public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
+            {
+                Console.WriteLine();
+                int cp = Console.CursorTop;
+                string input = Console.ReadLine();
+                int choice;
+                while (!(int.TryParse(input, out choice)) || choice < fst || choice > last)
+                {
+                    Console.SetCursorPosition(0, cp);
+                    Console.WriteLine("잘못된 입력입니다.");
+                    Console.Write("                    \r");
+                    input = Console.ReadLine();
+                }
+                return choice;
+            }
             public void PlayGame() // 게임 시작 메서드
             {
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
@@ -309,21 +324,6 @@ namespace Team7SpartaDungeon
                     player.Gold = 0;
                     player.Exp = 0;
                 }
-            }
-            public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
-            {
-                Console.WriteLine();
-                int cp = Console.CursorTop;
-                string input = Console.ReadLine();
-                int choice;
-                while (!(int.TryParse(input, out choice)) || choice < fst || choice > last)
-                {
-                    Console.SetCursorPosition(0, cp);
-                    Console.WriteLine("잘못된 입력입니다.");
-                    Console.Write("                    \r");
-                    input = Console.ReadLine();
-                }
-                return choice;
             }
         }
     }
