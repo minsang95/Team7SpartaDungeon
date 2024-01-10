@@ -306,7 +306,9 @@ namespace Team7SpartaDungeon
                     Console.WriteLine($"Lv. {player.Level} {player.Name}\nHP {beforeHp} -> 0\n\n");
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
-                    player.Hp = 0;
+                    player.Hp = player.MaxHp;
+                    player.Gold = 0;
+                    player.Exp = 0;
                 }
             }
             public int ChoiceInput(int limit, int limit2, string action) // 선택지 입력 메서드
