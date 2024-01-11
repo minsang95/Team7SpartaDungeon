@@ -564,11 +564,7 @@ namespace Team7SpartaDungeon
 
                     for (int i = 0; i < monsters.Count; i++) // 몬스터 리스트 수 만큼 반복
                     {
-                        if (monsters[i].Hp <= 0) // 죽었으면
-                        {
                             totalGold += monsters[i].Gold;  // 몬스터의 골드를 획득 골드에 추가
-
-                        }
                         if (items.Count > 0) // 아이템 리스트에 아이템이 있는지 확인
                         {
                             int itemIdx = r.Next(items.Count); // 아이템 리스트 내에서 랜덤한 인덱스 선택
