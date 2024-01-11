@@ -239,7 +239,7 @@
                 Console.WriteLine($"캐릭터의 정보가 표시됩니다.\n\n" +
                                   $" 이름   : {player.Name}\n" +
                                   $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n 마법력 : {player.SkillAtk}\n" +
-                                  $" 체 력  : {player.Hp}/{player.MaxHp}\n 마 나  : {player.Mp}/{player.MaxMp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.Level}\n\n" +
+                                  $" 체 력  : {player.Hp}/{player.MaxHp}\n 마 나  : {player.Mp}/{player.MaxMp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.MaxExp}\n\n" +
                                   $"Enter. 나가기");
                 Console.ReadLine();
             }
@@ -386,8 +386,8 @@
                             Console.ResetColor();
                         }
                     }
-                    Console.WriteLine("사용할 스킬을 선택해주세요.");
-                    int use = ChoiceInput(1, player.Skill.Count);
+                    Console.WriteLine("사용할 스킬을 선택해주세요.\n\n0. 취소");
+                    int use = ChoiceInput(0, player.Skill.Count);
                     //------------------ 전사 스킬 ------------------------------------------------------------------------------------------------------------------------------
                     if (player is Warrior && use == 1 && player.AvailableSkill[use - 1]) // 전사 1번 스킬 // 알파 스트라이크 - MP 10, 공격력 * 2 로 하나의 적을 공격합니다.
                     {
