@@ -499,7 +499,58 @@ namespace Team7SpartaDungeon
                     }
                     if(player is Wizard && use == 2 && player.AvailableSkill[use-1]) // 마법사 2번 스킬 아이스 스피어 - MP 10, 마법력 + 10 으로 가장 앞에있는 적을 공격한다. 만약 적이 사망할 경우, 초과한 데미지만큼 다음 적이 데미지를 받는다.
                     {
-
+                        if(10 <= player.Mp)
+                        {
+                            player.Mp -= 10;
+                            if (2 <= CheckMonsters())
+                            {
+                                int atk = monsters.Count - 1;
+                                for (int i = 0; i < monsters.Count; i++)
+                                {
+                                    if (0 < monsterHp[atk]) break;
+                                    atk--;
+                                }
+                                int hp1 = monsterHp[atk]; int hp2 = monsterHp[atk - 1];
+                                monsterHp[atk] -= player.SkillAtk + 10;
+                                if (monsterHp[atk] < 0)
+                                    monsterHp[atk - 1] += monsterHp[atk];
+                                BattleField();
+                                Console.WriteLine($"\n\n{player.Name} 의 아이스 스피어!\n");
+                                if (monsterHp[atk] < 0)
+                                    Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk - 1]}]");
+                                Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk]}]");
+                                if (monsterHp[atk - 1] <= 0)
+                                    Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {hp2} -> Dead");
+                                if (monsterHp[atk] <= 0)
+                                    Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {hp1} -> Dead");
+                                Console.WriteLine("\n\nEnter. 다음");
+                                Console.ReadLine();
+                                if (CheckMonsters() != 0) EnemyFrontPhase();
+                            }
+                            else
+                            {
+                                int atk;
+                                while (true)
+                                {
+                                    atk = r.Next(0, monsters.Count);
+                                    if (0 < monsterHp[atk]) break;
+                                }
+                                int bh = monsterHp[atk];
+                                monsterHp[atk] -= player.SkillAtk + 10;
+                                BattleField();
+                                Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
+                                if (monsterHp[atk] <= 0)
+                                    Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {bh} -> Dead");
+                                Console.WriteLine("\n\nEnter. 다음");
+                                Console.ReadLine();
+                                if (CheckMonsters() != 0) EnemyFrontPhase();
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("MP 가 부족합니다.\n\nEnter. 다음");
+                            Console.ReadLine();
+                        }
                     }
                     else if(player is Wizard && use == 2)
                     {
