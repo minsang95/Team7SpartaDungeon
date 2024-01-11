@@ -76,10 +76,13 @@
             public int Atk { get; set; }
             public int Def { get; set; }
             public int Hp { get; set; }
+
             public int DropExp { get; }
-            public int Burning {  get; set; }
-            public int BurningDmg {  get; set; }
-            public Monster(string name, int level, int atk, int def, int hp, int dropExp)
+            public int Burning { get; set; }
+            public int BurningDmg { get; set; }
+            public int Gold { get; set; }
+            public Monster(string name, int level, int atk, int def, int hp, int dropExp, int gold)
+
             {
                 Name = name;
                 Level = level;
@@ -87,8 +90,28 @@
                 Def = def;
                 Hp = hp;
                 DropExp = dropExp;
+                Gold = gold;
             }
         }
+        public class Item
+        {
+            public string Name { get; }
+            public int Type { get; }
+            public int Atk { get; set; }
+            public int Def { get; set; }
+            public int Gold { get; set; }
+
+            public Item(string name, int type, int atk, int def, int gold)
+            {
+                Name = name;
+                Type = type;
+                Atk = atk;
+                Def = def;
+                Gold = gold;
+            }
+        }
+
+
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
@@ -100,10 +123,12 @@
         {
             // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
-            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20);
-            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80);
-            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50);
+            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 500);
+            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80, 1000);
+            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50, 800);
+
             List<Monster> dungeon = new List<Monster>();
+            List<Item> items = new List<Item>(); // 아이템 리스트 초기화
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
                 Console.WriteLine();
@@ -119,11 +144,21 @@
                 }
                 return choice;
             }
+            public void ItemTable() // 드랍 테이블 보관용 아이템 메서드
+            {
+                items.Add(new Item("낡은 검", 0, 3, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
+                items.Add(new Item("보통 검", 0, 7, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
+                items.Add(new Item("낡은 갑옷", 1, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
+                items.Add(new Item("보통 갑옷", 1, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
+                items.Add(new Item("체력 포션", 2, 0, 0, 200));  // 소모품, 공격력 0, 방어력 0, 가격 200
+            }
+
             public void PlayGame() // 게임 시작 메서드
             {
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
+                ItemTable(); // 드랍 테이블 초기화
                 Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사");
                 switch (ChoiceInput(1, 2)) // 직업 선택
                 {
@@ -324,7 +359,7 @@
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
                             }
-                            if ((CheckMonsters()!= 0)) EnemyFrontPhase(); // 공격 종료 후, 몬스터가 남아있으면 몬스터 턴
+                            if ((CheckMonsters() != 0)) EnemyFrontPhase(); // 공격 종료 후, 몬스터가 남아있으면 몬스터 턴
                         }
                         else
                         {
@@ -353,7 +388,7 @@
                     }
                     Console.WriteLine("사용할 스킬을 선택해주세요.");
                     int use = ChoiceInput(1, player.Skill.Count);
-//------------------ 전사 스킬 ------------------------------------------------------------------------------------------------------------------------------
+                    //------------------ 전사 스킬 ------------------------------------------------------------------------------------------------------------------------------
                     if (player is Warrior && use == 1 && player.AvailableSkill[use - 1]) // 전사 1번 스킬 // 알파 스트라이크 - MP 10, 공격력 * 2 로 하나의 적을 공격합니다.
                     {
                         if (10 <= player.Mp)
@@ -511,13 +546,13 @@
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
-//---------------- 마법사 스킬 -----------------------------------------------------------------------------------------------------------------------------------------------
+                    //---------------- 마법사 스킬 -----------------------------------------------------------------------------------------------------------------------------------------------
                     if (player is Wizard && use == 1 && player.AvailableSkill[use - 1]) // 마법사 1번 스킬 "파이어 브레스 - MP 20, 마법력 * 0.5 로 모든 적을 공격하고, 화상 상태로 만듭니다.(화상 데미지x4)
                     {
-                        if(20 <= player.Mp)
+                        if (20 <= player.Mp)
                         {
                             player.Mp -= 20;
-                            for(int i = 0; i < monsters.Count; i++)
+                            for (int i = 0; i < monsters.Count; i++)
                             {
                                 int bh = monsterHp[i];
                                 if (0 < monsterHp[i])
@@ -550,9 +585,9 @@
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
-                    if(player is Wizard && use == 2 && player.AvailableSkill[use-1]) // 마법사 2번 스킬 아이스 스피어 - MP 10, 마법력 + 10 으로 가장 앞에있는 적을 공격한다. 만약 적이 사망할 경우, 초과한 데미지만큼 다음 적이 데미지를 받는다.
+                    if (player is Wizard && use == 2 && player.AvailableSkill[use - 1]) // 마법사 2번 스킬 아이스 스피어 - MP 10, 마법력 + 10 으로 가장 앞에있는 적을 공격한다. 만약 적이 사망할 경우, 초과한 데미지만큼 다음 적이 데미지를 받는다.
                     {
-                        if(10 <= player.Mp)
+                        if (10 <= player.Mp)
                         {
                             player.Mp -= 10;
                             if (2 <= CheckMonsters())
@@ -605,7 +640,7 @@
                             Console.ReadLine();
                         }
                     }
-                    else if(player is Wizard && use == 2)
+                    else if (player is Wizard && use == 2)
                     {
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
@@ -614,7 +649,7 @@
 
                 void EnemyFrontPhase()
                 {
-                    for(int i = 0; i < monsters.Count; i++)
+                    for (int i = 0; i < monsters.Count; i++)
                     {
                         int bh = monsterHp[i];
                         if (0 < monsterHp[i] && 0 < monsterBurn[i])
@@ -689,6 +724,7 @@
                     Console.WriteLine($"Lv. {player.Level} {player.Name}\nHP {beforeHp} -> {player.Hp}\nMP {beforeMp} -> {player.Mp}\nExp {beforeExp} -> {player.Exp}\n\n");
                     Console.ReadKey();
                     LevelUp();
+                    GetRewards();
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
                 }
@@ -702,12 +738,56 @@
                     Console.WriteLine("   You Lose\n\n");
                     Console.ResetColor();
                     Console.WriteLine($"Lv. {player.Level} {player.Name}\nGold {player.Gold} - > 0\nExp {player.Exp} -> 0\n\n");
-                    Console.WriteLine("마을로 돌아가 체력과 마나를 회복하였습니다.\n\nEnter. 다음");
+                    Console.WriteLine("\n마을로 돌아가 체력과 마나를 회복하였습니다.\n\nEnter. 다음");
                     Console.ReadLine();
                     player.Hp = player.MaxHp;
                     player.Mp = player.MaxMp;
                     player.Gold = 0;
                     player.Exp = 0;
+                }
+                void GetRewards() // 던전 보상 메서드
+                {
+                    Random r = new Random(); // 랜덤 객체 생성, 랜덤 숫자를 생성하려고
+                    Dictionary<string, int> itemCounts = new Dictionary<string, int>();
+                    // 딕셔너리? => string(아이템 이름), int(아이템 수량)을 가진 객체 생성,  아이템 이름으로 수량 추적
+                    int totalGold = 0; //획득 골드 표시하려고, 일단 초기화
+
+                    for (int i = 0; i < monsters.Count; i++) // 몬스터 리스트 수 만큼 반복
+                    {
+                        totalGold += monsters[i].Gold;  // 몬스터의 골드를 획득 골드에 추가
+                        if (items.Count > 0) // 아이템 리스트에 아이템이 있는지 확인
+                        {
+                            int itemIdx = r.Next(items.Count); // 아이템 리스트 내에서 랜덤한 인덱스 선택
+                            Item dropItem = items[itemIdx]; // 선택한 인덱스에 해당하는 아이템 가져 옴
+
+                            if (itemCounts.ContainsKey(dropItem.Name)) // 이미 획득한 아이템이면
+                            // ContainsKey -> 딕셔너리랑 같이 씀        아이템 이름 - 번호   
+                            // dropItem.Name = 아이템 이름 문자열
+                            {
+                                itemCounts[dropItem.Name]++;  // 이미 있는 템이면 수량 1 +
+                            }
+                            else
+                            {
+                                itemCounts.Add(dropItem.Name, 1); // 없으면 새로 만들고 1개
+                            }
+                        }
+                    }
+                    Console.WriteLine("[획득 아이템]");
+                    Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.Write(" " + $"{totalGold}");
+                    Console.ResetColor();
+                    Console.Write(" Gold\n");
+                    foreach (var item in itemCounts) // 획득한 아이템의 이름과 수량을 순회
+                    {
+                        Console.WriteLine("");
+                        Console.Write(item.Key + " - "); // item.Key = 아이템 이름
+                        Console.ForegroundColor = ConsoleColor.Magenta;
+                        Console.Write(item.Value); // item.Value = 아이템 수량
+                        Console.ResetColor();
+                        Console.Write(" 개");
+                        Console.WriteLine("");
+                    }
                 }
             }
         }
