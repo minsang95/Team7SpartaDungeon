@@ -4,6 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Team7SpartaDungeon", "Team7SpartaDungeon\Team7SpartaDungeon.csproj", "{9DCEB1A5-235E-456C-BE94-504CF11EC4D4}"
+<<<<<<< HEAD
+=======
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LHM", "LHM\LHM.csproj", "{EF76CE2C-3A92-453B-A235-3C3EA00D29AF}"
+>>>>>>> 이혜미
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,10 @@ Global
 		{9DCEB1A5-235E-456C-BE94-504CF11EC4D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DCEB1A5-235E-456C-BE94-504CF11EC4D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DCEB1A5-235E-456C-BE94-504CF11EC4D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF76CE2C-3A92-453B-A235-3C3EA00D29AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF76CE2C-3A92-453B-A235-3C3EA00D29AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF76CE2C-3A92-453B-A235-3C3EA00D29AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF76CE2C-3A92-453B-A235-3C3EA00D29AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

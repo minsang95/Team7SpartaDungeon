@@ -2,7 +2,7 @@
 {
     internal class Program
     {
-        //-------- 플레이어 직업, 몬스터, 아이템 참조 ---------------------------------------------------------------------------------
+        //----- 플레이어 직업, 몬스터, 아이템 참조 ---------------------------------------------------------------------------------
         public class Player
         {
             public string Name { get; set; }
@@ -17,7 +17,6 @@
             public int Gold { get; set; }
             public int Exp { get; set; }
             public int MaxExp { get; set; }
-
             public List<bool> AvailableSkill { get; set; }
             public List<string> Skill { get; set; }
         }
@@ -73,7 +72,6 @@
             public int Hp { get; set; }
             public int DropExp { get; }
             public Monster(string name, int level, int atk, int def, int hp, int dropExp)
-
             {
                 Name = name;
                 Level = level;
@@ -170,7 +168,7 @@
                     player.Level += 1;
                     player.Atk += 5;
                     player.Def += 1;
-                    if (player.Class == "전사")
+                    if(player.Class == "전사")
                     {
                         player.MaxHp += 10;
                         player.MaxMp += 5;
@@ -180,7 +178,7 @@
                         player.MaxHp += 5;
                         player.MaxMp += 10;
                     }
-                    player.Hp = player.MaxHp; //레벨업 시 회복
+                    player.Hp = player.MaxHp;
                     player.Mp = player.MaxMp;
 
                     Console.ReadKey();
@@ -228,7 +226,7 @@
                             Skill();
                             break;
                     }
-                    if (CheckMonsters() == 0) break;
+                    if (CheckMonsters()) break;
                 }
                 if (0 < player.Hp) Victory();
                 else Lose();
@@ -276,7 +274,6 @@
 
                 void Attack() // 플레이어 공격
                 {
-
                     BattleField();
                     MonsterNumber();
                     Console.WriteLine("0. 취소\n\n대상을 선택해주세요.");
@@ -285,31 +282,11 @@
                     {
                         if (0 < monsterHp[atk - 1])
                         {
-                            int Critical = r.Next(1, 101);
                             int bh = monsterHp[atk - 1];
-                            if (Critical <= 15)
-                            {
-                                monsterHp[atk - 1] -= r.Next((int)Math.Ceiling(player.Atk * 1.44f), (int)Math.Ceiling(player.Atk * 1.76f) + 1); // 플레이어 공격 데미지
-                                BattleField();
-                                Console.WriteLine($"\n\n{player.Name} 의 공격!\n");
-                                Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk - 1]}] - 치명타!!");
-                            }
-                            else if (Critical >= 90)
-                            {
-                                BattleField();
-                                Console.WriteLine($"\n\n{player.Name} 의 공격!\n");
-                                Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 공격했지만 아무일도 일어나지 않았습니다.");
-                            }
-                            else
-                            {
-                                monsterHp[atk - 1] -= r.Next((int)Math.Ceiling(player.Atk * 0.9f), (int)Math.Ceiling(player.Atk * 1.1f) + 1); // 플레이어 공격 데미지
-                                BattleField();
-                                Console.WriteLine($"\n\n{player.Name} 의 공격!\n");
-                                Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk - 1]}]");
-                            }
-
-
-
+                            monsterHp[atk - 1] -= r.Next((int)Math.Ceiling(player.Atk * 0.9f), (int)Math.Ceiling(player.Atk * 1.1f) + 1); // 플레이어 공격 데미지
+                            BattleField();
+                            Console.WriteLine($"\n\n{player.Name} 의 공격!\n");
+                            Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk - 1]}]");
                             if (monsterHp[atk - 1] <= 0)
                             {
                                 Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
@@ -317,7 +294,7 @@
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
                             }
-                            if ((CheckMonsters()!= 0)) EnemyPhase(); // 공격 종료 후, 몬스터가 남아있으면 몬스터 턴
+                            if (!(CheckMonsters())) EnemyPhase(); // 공격 종료 후, 몬스터가 남아있으면 몬스터 턴
                         }
                         else
                         {
@@ -348,7 +325,7 @@
                     int use = ChoiceInput(1, player.Skill.Count);
                     if (use == 1 && player.AvailableSkill[use - 1]) // 전사 1번 스킬 // 알파 스트라이크 - MP 10, 공격력 * 2 로 하나의 적을 공격합니다.
                     {
-                        if (10 <= player.Mp)
+                        if (10 < player.Mp)
                         {
                             BattleField();
                             MonsterNumber();
@@ -358,26 +335,12 @@
                             {
                                 if (0 < monsterHp[atk - 1])
                                 {
-                                    int Critical = r.Next(1, 101);
-
                                     int bh = monsterHp[atk - 1];
                                     player.Mp -= 10;
-                                    if (Critical <= 15)
-                                    {
-                                        monsterHp[atk - 1] -= (int)Math.Ceiling(player.Atk * 3.2f); //  알파 스트라이크 데미지
-                                        BattleField();
-                                        Console.WriteLine($"\n\n{player.Name} 의 알파 스트라이크!\n");
-                                        Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk - 1]}]- 치명타!!");
-                                    }
-                                    else
-                                    {
-                                        monsterHp[atk - 1] -= (int)Math.Ceiling(player.Atk * 2);
-                                        BattleField();
-                                        Console.WriteLine($"\n\n{player.Name} 의 알파 스트라이크!\n");
-                                        Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk - 1]}]");
-                                    }
-
-
+                                    monsterHp[atk - 1] -= (int)Math.Ceiling(player.Atk * 2); //  알파 스트라이크 데미지
+                                    BattleField();
+                                    Console.WriteLine($"\n\n{player.Name} 의 알파 스트라이크!\n");
+                                    Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk - 1]}]");
                                     if (monsterHp[atk - 1] <= 0)
                                     {
                                         Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
@@ -385,7 +348,7 @@
                                     }
                                     Console.WriteLine("\n\nEnter. 다음");
                                     Console.ReadLine();
-                                    if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                    if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                                 }
                                 else
                                 {
@@ -409,40 +372,22 @@
                     {
                         if (15 <= player.Mp)
                         {
-                            if (2 <= CheckMonsters())
-
+                            if (2 <= monsters.Count)
                             {
-                                int atk1; int atk2;
+                                int atk1 = r.Next(0, monsters.Count); int atk2;
                                 while (true)
                                 {
-                                    atk1 = r.Next(0, monsters.Count);
                                     atk2 = r.Next(0, monsters.Count);
-                                    if (atk1 != atk2 && 0 < monsterHp[atk1] && 0 < monsterHp[atk2]) break;
+                                    if (atk1 != atk2) break;
                                 }
-                                int Critical = r.Next(1, 101);
-
                                 int hp1 = monsterHp[atk1]; int hp2 = monsterHp[atk2];
                                 player.Mp -= 15;
-                                if (Critical <= 15)
-                                {
-                                    monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 2.4);
-                                    monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 2.4);
-                                    BattleField();
-                                    Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
-                                    Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]- 치명타!!");
-                                    Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]- 치명타!!");
-                                }
-                                else
-                                {
-                                    monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 1.5);
-                                    monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 1.5);
-                                    BattleField();
-                                    Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
-                                    Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]");
-                                    Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]");
-                                }
-
-
+                                monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 1.5);
+                                monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 1.5);
+                                BattleField();
+                                Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
+                                Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]");
+                                Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]");
                                 if (monsterHp[atk1] <= 0)
                                 {
                                     Console.WriteLine($"\nLv.{monsters[atk1].Level} {monsters[atk1].Name}\nHP {hp1} -> Dead");
@@ -455,33 +400,16 @@
                                 }
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
-                                if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                             }
-                            else if (CheckMonsters() == 1)
+                            else
                             {
-                                int atk;
-                                while (true)
-                                {
-                                    atk = r.Next(0, monsters.Count);
-                                    if (0 < monsterHp[atk]) break;
-                                }
-                                int Critical = r.Next(1, 101);
-                                int bh = monsterHp[atk];
+                                int bh = monsterHp[0];
                                 player.Mp -= 15;
-                                if (Critical <= 15)
-                                {
-                                    monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 2.4);
-                                    BattleField();
-                                    Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
-                                    Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]- 치명타!!");
-                                }
-                                else
-                                {
-                                    monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 1.5);
-                                    BattleField();
-                                    Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
-                                    Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
-                                }
+                                monsterHp[0] -= (int)Math.Ceiling(player.Atk * 1.5);
+                                BattleField();
+                                Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
+                                Console.WriteLine($"Lv.{monsters[0].Level} {monsters[0].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[0]}]");
                                 if (monsterHp[0] <= 0)
                                 {
                                     Console.WriteLine($"\nLv.{monsters[0].Level} {monsters[0].Name}\nHP {bh} -> Dead");
@@ -489,7 +417,7 @@
                                 }
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
-                                if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                             }
                         }
                         else
@@ -514,7 +442,6 @@
                         if (damage < 0) damage = 0;
                         if (0 < monsterHp[i])
                         {
-
                             player.Hp -= damage;
                             BattleField();
                             Console.SetCursorPosition(0, 3 + i);
@@ -537,14 +464,19 @@
                     }
                 }
 
-                int CheckMonsters()
+                bool CheckMonsters() // 몬스터가 모두 죽었는지 확인하는 메서드. 모두 죽었으면 true, 아니면 false 반환
                 {
-                    int live = 0;
+                    int dead = 0;
                     for (int i = 0; i < monsters.Count; i++)
                     {
-                        if (0 < monsterHp[i]) live++;
+                        if (monsterHp[i] <= 0)
+                            dead++;
                     }
-                    return live;
+                    if (dead == monsters.Count)
+                    {
+                        return true;
+                    }
+                    return false;
                 }
 
                 void Victory() // 전투 승리 결과출력
