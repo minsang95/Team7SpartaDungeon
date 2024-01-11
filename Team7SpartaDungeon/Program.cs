@@ -131,8 +131,7 @@ namespace Team7SpartaDungeon
                 }
                 return choice;
             }
-
-            public void ItemTable() // 드랍 테이블 보관용 메서드
+            public void ItemTable() // 드랍 테이블 보관용 아이템 메서드
             {
                 items.Add(new Item("낡은 검", 0, 3, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
                 items.Add(new Item("보통 검", 0, 7, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
@@ -534,6 +533,7 @@ namespace Team7SpartaDungeon
                     Console.WriteLine($"던전에서 몬스터 {monsters.Count}마리를 잡았습니다.\n\n");
                     Console.WriteLine($"Lv. {player.Level} {player.Name}\nHP {beforeHp} -> {player.Hp}\nMP {beforeMp} -> {player.Mp}\n\n");
                     GetRewards();
+                    Console.WriteLine("");
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
                 }
@@ -567,6 +567,7 @@ namespace Team7SpartaDungeon
                         if (monsters[i].Hp <= 0) // 죽었으면
                         {
                             totalGold += monsters[i].Gold;  // 몬스터의 골드를 획득 골드에 추가
+
                         }
                         if (items.Count > 0) // 아이템 리스트에 아이템이 있는지 확인
                         {
@@ -588,10 +589,9 @@ namespace Team7SpartaDungeon
                     Console.WriteLine("[획득 아이템]");
                     Console.WriteLine("");
                     Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.Write("  " + totalGold);
+                    Console.Write(" " + $"{totalGold}");
                     Console.ResetColor();
-                    Console.Write("    Gold");
-                    Console.WriteLine("");
+                    Console.Write(" Gold\n");
 
                     foreach (var item in itemCounts) // 획득한 아이템의 이름과 수량을 순회
                     {
@@ -604,7 +604,8 @@ namespace Team7SpartaDungeon
                         Console.WriteLine("");
                     }
                 }
-            
+
+
             }
         }
     }
