@@ -71,7 +71,7 @@
             public int Def { get; set; }
             public int Hp { get; set; }
             public int DropExp { get; }
-            public Monster(string name, int level, int atk, int def, int hp,int dropExp)
+            public Monster(string name, int level, int atk, int def, int hp, int dropExp)
             {
                 Name = name;
                 Level = level;
@@ -92,9 +92,9 @@
         {
             // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
-            Monster minion = new Monster("미니언", 2, 10, 0, 15,20);
-            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25,80);
-            Monster voidBug = new Monster("공허충", 3, 15, 0, 10,50);
+            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20);
+            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80);
+            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50);
             List<Monster> dungeon = new List<Monster>();
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
@@ -151,10 +151,10 @@
             public void LevelUp()
             {
                 if (player.Exp < player.MaxExp) return;
-                else if (player.Exp>=player.MaxExp)
+                while (player.Exp >= player.MaxExp)
                 {
                     Console.Clear();
-                    Console.WriteLine("레벨이 올랐습니다!");
+                    Console.WriteLine("레벨이 올랐습니다!" + player.Level + "->" + (player.Level + 1));
                     Console.WriteLine("공격력이 5 올랐습니다.");
                     Console.WriteLine("방어력이 1 올랐습니다.");
                     Console.WriteLine("체력이 10 올랐습니다.");
@@ -162,13 +162,27 @@
 
                     for (int i = 1; i <= player.Level; i++)
                     {
-                        player.MaxExp += (i*30);
+                        player.MaxExp += (i * 30);
                     }
-                
+
                     player.Level += 1;
                     player.Atk += 5;
                     player.Def += 1;
-                    player.Hp += 10;
+                    if(player.Class == "전사")
+                    {
+                        player.MaxHp += 10;
+                        player.MaxMp += 5;
+                    }
+                    else
+                    {
+                        player.MaxHp += 5;
+                        player.MaxMp += 10;
+                    }
+                    player.Hp = player.MaxHp;
+                    player.Mp = player.MaxMp;
+
+                    Console.ReadKey();
+
                 }
             }
 
@@ -397,7 +411,10 @@
                                 Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                 Console.WriteLine($"Lv.{monsters[0].Level} {monsters[0].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[0]}]");
                                 if (monsterHp[0] <= 0)
+                                {
                                     Console.WriteLine($"\nLv.{monsters[0].Level} {monsters[0].Name}\nHP {bh} -> Dead");
+                                    player.Exp += monsters[0].DropExp;
+                                }
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
                                 if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
@@ -472,6 +489,7 @@
                     Console.ResetColor();
                     Console.WriteLine($"던전에서 몬스터 {monsters.Count}마리를 잡았습니다.\n\n");
                     Console.WriteLine($"Lv. {player.Level} {player.Name}\nHP {beforeHp} -> {player.Hp}\nMP {beforeMp} -> {player.Mp}\nExp {beforeExp} -> {player.Exp}\n\n");
+                    Console.ReadKey();
                     LevelUp();
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
