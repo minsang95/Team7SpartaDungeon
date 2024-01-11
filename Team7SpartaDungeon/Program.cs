@@ -13,6 +13,7 @@ namespace Team7SpartaDungeon
             public int Level { get; set; }
             public float Atk { get; set; }
             public int Def { get; set; }
+            public int SkillAtk { get; set; }
             public int MaxHp { get; set; }
             public int Hp { get; set; }
             public int MaxMp { get; set; }
@@ -21,6 +22,7 @@ namespace Team7SpartaDungeon
             public int Exp { get; set; }
             public List<bool> AvailableSkill { get; set; }
             public List<string> Skill { get; set; }
+            public int BurningDmg { get; set; }
         }
 
         public class Warrior : Player
@@ -32,6 +34,7 @@ namespace Team7SpartaDungeon
                 Level = 1;
                 Atk = 10;
                 Def = 5;
+                SkillAtk = 0;
                 MaxHp = 100;
                 Hp = 100;
                 MaxMp = 50;
@@ -52,6 +55,7 @@ namespace Team7SpartaDungeon
                 Level = 1;
                 Atk = 5;
                 Def = 0;
+                SkillAtk = 10;
                 MaxHp = 80;
                 Hp = 80;
                 MaxMp = 100;
@@ -60,6 +64,7 @@ namespace Team7SpartaDungeon
                 Exp = 0;
                 AvailableSkill = new List<bool>();
                 Skill = new List<string>();
+                BurningDmg = 5;
             }
         }
 
@@ -70,6 +75,8 @@ namespace Team7SpartaDungeon
             public int Atk { get; set; }
             public int Def { get; set; }
             public int Hp { get; set; }
+            public int Burning {  get; set; }
+            public int BurningDmg {  get; set; }
             public Monster(string name, int level, int atk, int def, int hp)
             {
                 Name = name;
@@ -126,6 +133,10 @@ namespace Team7SpartaDungeon
                         break;
                     case 2:
                         player = new Wizard();
+                        player.Skill.Add("파이어 브레스 - MP 20\n   마법력 * 0.5 로 모든 적을 공격하고, 화상 상태로 만듭니다.(화상 데미지 5 x 4)"); // 마법사 1번 스킬 추가
+                        player.AvailableSkill.Add(true);
+                        player.Skill.Add("아이스 스피어 - MP 10\n   마법력 + 10 으로 가장 앞에있는 적을 공격한다. 만약 적이 사망할 경우, 초과한 데미지만큼 다음 적이 데미지를 받는다."); // 마법사 2번스킬 추가
+                        player.AvailableSkill.Add(true);
                         break;
                 }
                 Console.WriteLine("원하시는 이름을 설정해주세요.");
@@ -151,8 +162,8 @@ namespace Team7SpartaDungeon
                 Console.Clear();
                 Console.WriteLine($"캐릭터의 정보가 표시됩니다.\n\n" +
                                   $" 이름   : {player.Name}\n" +
-                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n" +
-                                  $" 체 력  : {player.Hp}/{player.MaxHp}\n 마 력  : {player.Mp}/{player.MaxMp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.Level}\n\n" +
+                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n 마법력 : {player.SkillAtk}\n" +
+                                  $" 체 력  : {player.Hp}/{player.MaxHp}\n 마 나  : {player.Mp}/{player.MaxMp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.Level}\n\n" +
                                   $"Enter. 나가기");
                 Console.ReadLine();
             }
@@ -171,7 +182,7 @@ namespace Team7SpartaDungeon
                 {
                     monsterHp[i] = monsters[i].Hp;            // 몬스터의 마릿수와 동일한크기의 int 배열 생성 후, 몬스터의 체력 정보 저장
                 }
-
+                int[] monsterBurn = new int[monsters.Count];
                 while (0 < player.Hp) // 전투 시작 플레이어 턴
                 {
                     BattleField();
@@ -271,7 +282,7 @@ namespace Team7SpartaDungeon
                                 Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
                             Console.WriteLine("\n\nEnter. 다음");
                             Console.ReadLine();
-                            if (CheckMonsters() != 0) EnemyPhase(); // 공격 종료 후, 몬스터가 남아있으면 몬스터 턴
+                            if (CheckMonsters() != 0) EnemyFrontPhase(); // 공격 종료 후, 몬스터가 남아있으면 몬스터 턴
 
 
                         }
@@ -302,7 +313,8 @@ namespace Team7SpartaDungeon
                     }
                     Console.WriteLine("사용할 스킬을 선택해주세요.");
                     int use = ChoiceInput(1, player.Skill.Count);
-                    if (use == 1 && player.AvailableSkill[use - 1]) // 전사 1번 스킬 // 알파 스트라이크 - MP 10, 공격력 * 2 로 하나의 적을 공격합니다.
+//------------------ 전사 스킬 ------------------------------------------------------------------------------------------------------------------------------
+                    if (player is Warrior && use == 1 && player.AvailableSkill[use - 1]) // 전사 1번 스킬 // 알파 스트라이크 - MP 10, 공격력 * 2 로 하나의 적을 공격합니다.
                     {
                         if (10 <= player.Mp)
                         {
@@ -338,7 +350,7 @@ namespace Team7SpartaDungeon
                                         Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
                                     Console.WriteLine("\n\nEnter. 다음");
                                     Console.ReadLine();
-                                    if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                    if (CheckMonsters() != 0) EnemyFrontPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                                 }
                                 else
                                 {
@@ -353,12 +365,12 @@ namespace Team7SpartaDungeon
                             Console.ReadLine();
                         }
                     }
-                    else if (use == 1)
+                    else if (player is Warrior && use == 1)
                     {
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
-                    if (use == 2 && player.AvailableSkill[use - 1]) // 전사 2번 스킬 // 더블 스트라이크 - MP 15, 공격력 * 1.5 로 2명의 적을 랜덤으로 공격합니다.
+                    if (player is Warrior && use == 2 && player.AvailableSkill[use - 1]) // 전사 2번 스킬 // 더블 스트라이크 - MP 15, 공격력 * 1.5 로 2명의 적을 랜덤으로 공격합니다.
                     {
                         if (15 <= player.Mp)
                         {
@@ -401,7 +413,7 @@ namespace Team7SpartaDungeon
                                     Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name}\nHP {hp2} -> Dead");
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
-                                if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                if (CheckMonsters() != 0) EnemyFrontPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                             }
                             else if (CheckMonsters() == 1)
                             {
@@ -432,7 +444,7 @@ namespace Team7SpartaDungeon
                                     Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {bh} -> Dead");
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
-                                if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                if (CheckMonsters() != 0) EnemyFrontPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                             }
                         }
                         else
@@ -441,11 +453,85 @@ namespace Team7SpartaDungeon
                             Console.ReadLine();
                         }
                     }
-                    else if (use == 2)
+                    else if (player is Warrior && use == 2)
                     {
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
+//---------------- 마법사 스킬 -----------------------------------------------------------------------------------------------------------------------------------------------
+                    if (player is Wizard && use == 1 && player.AvailableSkill[use - 1]) // 마법사 1번 스킬 "파이어 브레스 - MP 20, 마법력 * 0.5 로 모든 적을 공격하고, 화상 상태로 만듭니다.(화상 데미지x4)
+                    {
+                        if(20 <= player.Mp)
+                        {
+                            player.Mp -= 20;
+                            for(int i = 0; i < monsters.Count; i++)
+                            {
+                                int bh = monsterHp[i];
+                                if (0 < monsterHp[i])
+                                {
+                                    monsterHp[i] -= (int)Math.Ceiling(player.SkillAtk * 0.5f);
+                                    monsterBurn[i] = 4;
+                                    BattleField();
+                                    Console.SetCursorPosition(0, 3 + i);
+                                    Console.WriteLine($"◎");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
+                                    Console.WriteLine($"\n\n{player.Name} 의 파이어 브레스!\n");
+                                    Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[i]}]");
+                                    Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 이(가) 화상을 입었습니다.");
+                                    if (monsterHp[i] <= 0)
+                                        Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name}\nHP {bh} -> Dead");
+                                    Console.WriteLine("\n\nEnter. 다음");
+                                    Console.ReadLine();
+                                }
+                            }
+                            if (CheckMonsters() != 0) EnemyFrontPhase();
+                        }
+                        else
+                        {
+                            Console.WriteLine("MP 가 부족합니다.\n\nEnter. 다음");
+                            Console.ReadLine();
+                        }
+                    }
+                    else if (player is Wizard && use == 1)
+                    {
+                        Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
+                        Console.ReadLine();
+                    }
+                    if(player is Wizard && use == 2 && player.AvailableSkill[use-1]) // 마법사 2번 스킬
+                    {
+
+                    }
+                    else if(player is Wizard && use == 2)
+                    {
+                        Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
+                        Console.ReadLine();
+                    }
+                }
+
+                void EnemyFrontPhase()
+                {
+                    for(int i = 0; i < monsters.Count; i++)
+                    {
+                        int bh = monsterHp[i];
+                        if (0 < monsterHp[i])
+                        {
+                            if (0 < monsterBurn[i])
+                            {
+                                monsterHp[i] -= player.BurningDmg;
+                                monsterBurn[i]--;
+                                BattleField();
+                                Console.SetCursorPosition(0, 3 + i);
+                                Console.WriteLine($"♨");
+                                Console.SetCursorPosition(0, 11 + monsters.Count);
+                                Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name} 이(가) 화상으로 데미지를 받았다. [데미지 : {bh - monsterHp[i]}]");
+                                if (monsterHp[i] <= 0)
+                                    Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name}\nHP {bh} -> Dead");
+                                Console.WriteLine("\n\nEnter. 다음");
+                                Console.ReadLine();
+                            }
+                        }
+                    }
+                    if (CheckMonsters() != 0) EnemyPhase();
                 }
 
                 void EnemyPhase() // 몬스터 턴, 몬스터 행동
