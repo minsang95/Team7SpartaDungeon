@@ -8,5 +8,6 @@ namespace Team7SpartaDungeon
 {
     internal class Class1
     {
+        dfdf;
     }
 }
