@@ -5,7 +5,7 @@ namespace Team7SpartaDungeon
 {
     internal class Program
     {
-        //----- 플레이어 직업, 몬스터, 아이템 참조 ---------------------------------------------------------------------------------
+ //-------- 플레이어 직업, 몬스터, 아이템 참조 ---------------------------------------------------------------------------------
         public class Player
         {
             public string Name { get; set; }
@@ -185,7 +185,7 @@ namespace Team7SpartaDungeon
                             Skill();
                             break;
                     }
-                    if (CheckMonsters()) break;
+                    if (CheckMonsters() == 0) break;
                 }
                 if (0 < player.Hp) Victory();
                 else Lose();
@@ -250,7 +250,7 @@ namespace Team7SpartaDungeon
                                 Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
                             Console.WriteLine("\n\nEnter. 다음");
                             Console.ReadLine();
-                            if (!(CheckMonsters())) EnemyPhase(); // 공격 종료 후, 몬스터가 남아있으면 몬스터 턴
+                            if (CheckMonsters() != 0) EnemyPhase(); // 공격 종료 후, 몬스터가 남아있으면 몬스터 턴
                         }
                         else
                         {
@@ -281,7 +281,7 @@ namespace Team7SpartaDungeon
                     int use = ChoiceInput(1, player.Skill.Count);
                     if (use == 1 && player.AvailableSkill[use - 1]) // 전사 1번 스킬 // 알파 스트라이크 - MP 10, 공격력 * 2 로 하나의 적을 공격합니다.
                     {
-                        if (10 < player.Mp)
+                        if (10 <= player.Mp)
                         {
                             BattleField();
                             MonsterNumber();
@@ -301,7 +301,7 @@ namespace Team7SpartaDungeon
                                         Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
                                     Console.WriteLine("\n\nEnter. 다음");
                                     Console.ReadLine();
-                                    if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                    if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                                 }
                                 else
                                 {
@@ -323,15 +323,16 @@ namespace Team7SpartaDungeon
                     }
                     if(use == 2 && player.AvailableSkill[use-1]) // 전사 2번 스킬 // 더블 스트라이크 - MP 15, 공격력 * 1.5 로 2명의 적을 랜덤으로 공격합니다.
                     {
-                        if(15 < player.Mp)
+                        if(15 <= player.Mp)
                         {
-                            if(2 <= monsters.Count)
+                            if(2 <= CheckMonsters())
                             {
-                                int atk1 = r.Next(0, monsters.Count); int atk2;
+                                int atk1; int atk2;
                                 while (true)
                                 {
+                                    atk1 = r.Next(0, monsters.Count);
                                     atk2 = r.Next(0, monsters.Count);
-                                    if (atk1 != atk2) break;
+                                    if (atk1 != atk2 && 0 < monsterHp[atk1] && 0 < monsterHp[atk2]) break;
                                 }
                                 int hp1 = monsterHp[atk1]; int hp2 = monsterHp[atk2];
                                 player.Mp -= 15;
@@ -347,21 +348,27 @@ namespace Team7SpartaDungeon
                                     Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name}\nHP {hp2} -> Dead");
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
-                                if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                             }
-                            else
+                            else if(CheckMonsters() == 1)
                             {
-                                int bh = monsterHp[0];
+                                int atk;
+                                while (true)
+                                {
+                                    atk = r.Next(0, monsters.Count);
+                                    if (0 < monsterHp[atk]) break;
+                                }
+                                int bh = monsterHp[atk];
                                 player.Mp -= 15;
-                                monsterHp[0] -= (int)Math.Ceiling(player.Atk * 1.5);
+                                monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 1.5);
                                 BattleField();
                                 Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
-                                Console.WriteLine($"Lv.{monsters[0].Level} {monsters[0].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[0]}]");
+                                Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
                                 if (monsterHp[0] <= 0)
-                                    Console.WriteLine($"\nLv.{monsters[0].Level} {monsters[0].Name}\nHP {bh} -> Dead");
+                                    Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {bh} -> Dead");
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
-                                if (!(CheckMonsters())) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
+                                if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                             }
                         }
                         else
@@ -408,19 +415,14 @@ namespace Team7SpartaDungeon
                     }
                 }
 
-                bool CheckMonsters() // 몬스터가 모두 죽었는지 확인하는 메서드. 모두 죽었으면 true, 아니면 false 반환
+                int CheckMonsters()
                 {
-                    int dead = 0;
+                    int live = 0;
                     for (int i = 0; i < monsters.Count; i++)
                     {
-                        if (monsterHp[i] <= 0)
-                            dead++;
+                        if (0 < monsterHp[i]) live++;
                     }
-                    if (dead == monsters.Count)
-                    {
-                        return true;
-                    }
-                    return false;
+                    return live;
                 }
 
                 void Victory() // 전투 승리 결과출력
