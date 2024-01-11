@@ -159,7 +159,12 @@
                     Console.WriteLine("방어력이 1 올랐습니다.");
                     Console.WriteLine("체력이 10 올랐습니다.");
                     player.Exp -= player.MaxExp;
-                    player.MaxExp += 50;
+
+                    for (int i = 1; i <= player.Level; i++)
+                    {
+                        player.MaxExp += (i*30);
+                    }
+                
                     player.Level += 1;
                     player.Atk += 5;
                     player.Def += 1;
