@@ -403,7 +403,7 @@ namespace Team7SpartaDungeon
                                 Console.ReadLine();
                                 if (CheckMonsters() != 0) EnemyPhase(); // 스킬 종료 후, 몬스터가 남아있으면 몬스터 턴
                             }
-                            else if(CheckMonsters() == 1)
+                            else if (CheckMonsters() == 1)
                             {
                                 int atk;
                                 while (true)
@@ -411,12 +411,23 @@ namespace Team7SpartaDungeon
                                     atk = r.Next(0, monsters.Count);
                                     if (0 < monsterHp[atk]) break;
                                 }
+                                int Critical = r.Next(1, 101);
                                 int bh = monsterHp[atk];
                                 player.Mp -= 15;
-                                monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 1.5);
-                                BattleField();
-                                Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
-                                Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
+                                if (Critical <= 15)
+                                {
+                                    monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 2.4);
+                                    BattleField();
+                                    Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
+                                    Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]- 치명타!!");
+                                }
+                                else
+                                {
+                                    monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 1.5);
+                                    BattleField();
+                                    Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
+                                    Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
+                                }
                                 if (monsterHp[0] <= 0)
                                     Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {bh} -> Dead");
                                 Console.WriteLine("\n\nEnter. 다음");
@@ -430,7 +441,7 @@ namespace Team7SpartaDungeon
                             Console.ReadLine();
                         }
                     }
-                    else if(use == 2)
+                    else if (use == 2)
                     {
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
