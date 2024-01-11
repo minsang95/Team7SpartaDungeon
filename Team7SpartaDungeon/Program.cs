@@ -355,9 +355,9 @@
                             if (monsterHp[atk - 1] <= 0)
                             {
                                 Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
-                                Console.WriteLine("\n\nEnter. 다음");
-                                Console.ReadLine();
                             }
+                            Console.WriteLine("\n\nEnter. 다음");
+                            Console.ReadLine();
                             if ((CheckMonsters() != 0)) EnemyFrontPhase(); // 공격 종료 후, 몬스터가 남아있으면 몬스터 턴
                         }
                         else
@@ -418,8 +418,6 @@
                                         Console.WriteLine($"\n\n{player.Name} 의 알파 스트라이크!\n");
                                         Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk - 1]}]");
                                     }
-
-
                                     if (monsterHp[atk - 1] <= 0)
                                     {
                                         Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
