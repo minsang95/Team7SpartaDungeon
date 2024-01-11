@@ -355,7 +355,6 @@
                             if (monsterHp[atk - 1] <= 0)
                             {
                                 Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
-                                player.Exp += monsters[atk - 1].DropExp;
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
                             }
@@ -424,7 +423,6 @@
                                     if (monsterHp[atk - 1] <= 0)
                                     {
                                         Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {bh} -> Dead");
-                                        player.Exp += monsters[atk - 1].DropExp;
                                     }
                                     Console.WriteLine("\n\nEnter. 다음");
                                     Console.ReadLine();
@@ -489,12 +487,10 @@
                                 if (monsterHp[atk1] <= 0)
                                 {
                                     Console.WriteLine($"\nLv.{monsters[atk1].Level} {monsters[atk1].Name}\nHP {hp1} -> Dead");
-                                    player.Exp += monsters[atk1].DropExp;
                                 }
                                 if (monsterHp[atk2] <= 0)
                                 {
                                     Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name}\nHP {hp2} -> Dead");
-                                    player.Exp += monsters[atk2].DropExp;
                                 }
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
@@ -528,7 +524,6 @@
                                 if (monsterHp[0] <= 0)
                                 {
                                     Console.WriteLine($"\nLv.{monsters[0].Level} {monsters[0].Name}\nHP {bh} -> Dead");
-                                    player.Exp += monsters[0].DropExp;
                                 }
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
@@ -714,6 +709,10 @@
 
                 void Victory() // 전투 승리 결과출력
                 {
+                    for (int i = 0; i < monsters.Count;i++)
+                    {
+                        player.Exp += monsters[i].DropExp;
+                    }
                     Console.Clear();
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine("   Battle!! - Result\n\n");
