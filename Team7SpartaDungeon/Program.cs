@@ -497,7 +497,7 @@ namespace Team7SpartaDungeon
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
-                    if(player is Wizard && use == 2 && player.AvailableSkill[use-1]) // 마법사 2번 스킬
+                    if(player is Wizard && use == 2 && player.AvailableSkill[use-1]) // 마법사 2번 스킬 아이스 스피어 - MP 10, 마법력 + 10 으로 가장 앞에있는 적을 공격한다. 만약 적이 사망할 경우, 초과한 데미지만큼 다음 적이 데미지를 받는다.
                     {
 
                     }
@@ -513,22 +513,19 @@ namespace Team7SpartaDungeon
                     for(int i = 0; i < monsters.Count; i++)
                     {
                         int bh = monsterHp[i];
-                        if (0 < monsterHp[i])
+                        if (0 < monsterHp[i] && 0 < monsterBurn[i])
                         {
-                            if (0 < monsterBurn[i])
-                            {
-                                monsterHp[i] -= player.BurningDmg;
-                                monsterBurn[i]--;
-                                BattleField();
-                                Console.SetCursorPosition(0, 3 + i);
-                                Console.WriteLine($"♨");
-                                Console.SetCursorPosition(0, 11 + monsters.Count);
-                                Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name} 이(가) 화상으로 데미지를 받았다. [데미지 : {bh - monsterHp[i]}]");
-                                if (monsterHp[i] <= 0)
-                                    Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name}\nHP {bh} -> Dead");
-                                Console.WriteLine("\n\nEnter. 다음");
-                                Console.ReadLine();
-                            }
+                            monsterHp[i] -= player.BurningDmg;
+                            monsterBurn[i]--;
+                            BattleField();
+                            Console.SetCursorPosition(0, 3 + i);
+                            Console.WriteLine($"♨");
+                            Console.SetCursorPosition(0, 11 + monsters.Count);
+                            Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name} 이(가) 화상으로 데미지를 받았다. [데미지 : {bh - monsterHp[i]}]");
+                            if (monsterHp[i] <= 0)
+                                Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name}\nHP {bh} -> Dead");
+                            Console.WriteLine("\n\nEnter. 다음");
+                            Console.ReadLine();
                         }
                     }
                     if (CheckMonsters() != 0) EnemyPhase();
