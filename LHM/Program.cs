@@ -370,7 +370,7 @@
                     }
                     if (use == 2 && player.AvailableSkill[use - 1]) // 전사 2번 스킬 // 더블 스트라이크 - MP 15, 공격력 * 1.5 로 2명의 적을 랜덤으로 공격합니다.
                     {
-                        if (15 < player.Mp)
+                        if (15 <= player.Mp)
                         {
                             if (2 <= monsters.Count)
                             {
