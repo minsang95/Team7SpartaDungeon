@@ -364,7 +364,7 @@ namespace Team7SpartaDungeon
                                 BattleField();
                                 Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                 Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
-                                if (monsterHp[0] <= 0)
+                                if (monsterHp[atk] <= 0)
                                     Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {bh} -> Dead");
                                 Console.WriteLine("\n\nEnter. 다음");
                                 Console.ReadLine();
