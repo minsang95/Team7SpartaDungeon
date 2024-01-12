@@ -210,7 +210,7 @@ namespace Team7SpartaDungeon
                 {
                     Console.Clear();
 
-                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )");
+                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3.인벤토리");
                     switch (ChoiceInput(1, 3)) // 최초 선택지
 
                     {
@@ -221,7 +221,7 @@ namespace Team7SpartaDungeon
                             BattleStart();
                             break;
                         case 3:
-                            Inventory(); // 아이템 획득 테스트 때문에 임시로 추가
+                            Inventory(); 
                             break;
                     }
                 }
@@ -1016,32 +1016,25 @@ namespace Team7SpartaDungeon
                     }
                 }
             }
-            void Inventory() // 플레이어 임시 인벤토리 메서드
+            void Inventory()
             {
                 Console.Clear();
                 Console.WriteLine("[임시 인벤토리]\n");
 
-                foreach (var item in player.Inventory)  // 아이템의 이름과 수량을 순회
+                foreach (var item in player.Inventory) //아이템의 이름과 수량을 순회
                 {
                     Console.WriteLine($"{item.Name} - {item.Quantity} 개");
-                    // {item.Name}랑 {item.Quantity} 사이에 아이템 관련 프로퍼티(속성)들 넣으면 될 듯?  템설명, 공격력, 방어력 등등
+                    // {item.Name}랑 {item.Quantity} 사이에 아이템 관련 프로퍼티(속성) 추가 필요
                 }
-
                 Console.WriteLine("\n1. 장착하기 \n2. 돌아가기");
-                while (true)
-                {
                     switch (ChoiceInput(1, 2))
                     {
                         case 1:
                             //장착 관련 메서드();
                             break;
                         case 2:
-                            PlayGame();
-                            // 아직 나가는 곳 안 만듦, PlayGame(); 가면 아이템 획득 등 정보 초기화 되서 시작 메뉴 페이지 분리해야 할 듯.
                             break;
-                            //일단 상태창으로 임시 설정
                     }
-                }
             }
         }
     }
