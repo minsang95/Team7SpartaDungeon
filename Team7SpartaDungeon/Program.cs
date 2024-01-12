@@ -18,10 +18,12 @@
             public int Gold { get; set; }
             public int Exp { get; set; }
             public int MaxExp { get; set; }
-
+            public int HpPotion { get; set; }
+            public int MpPotion { get; set; }
             public List<bool> AvailableSkill { get; set; }
             public List<string> Skill { get; set; }
             public int BurningDmg { get; set; }
+
         }
 
         public class Warrior : Player
@@ -41,6 +43,8 @@
                 Gold = 1500;
                 Exp = 0;
                 MaxExp = 30;
+                HpPotion = 3;
+                MpPotion = 1;
                 AvailableSkill = new List<bool>();
                 Skill = new List<string>();
             }
@@ -63,6 +67,8 @@
                 Gold = 1500;
                 Exp = 0;
                 MaxExp = 30;
+                HpPotion = 3;
+                MpPotion = 1;
                 AvailableSkill = new List<bool>();
                 Skill = new List<string>();
                 BurningDmg = 5;
@@ -76,7 +82,6 @@
             public int Atk { get; set; }
             public int Def { get; set; }
             public int Hp { get; set; }
-
             public int DropExp { get; }
             public int Burning { get; set; }
             public int BurningDmg { get; set; }
@@ -100,27 +105,28 @@
             public int Atk { get; set; }
             public int Def { get; set; }
             public int Gold { get; set; }
-            public bool isEquiped { get; set; }
+            public int Quantity { get; set; } // 아이템 수량
+            public bool IsEquiped { get; set; }
             public static int itemCount;
-
-            public Item(string name, int type, int atk, int def, int gold, bool isEquiped)
+            public Item(string name, int type, int atk, int def, int gold, int quantity = 1, bool isEquiped=false)
             {
                 Name = name;
                 Type = type;
                 Atk = atk;
                 Def = def;
                 Gold = gold;
-                this.isEquiped = isEquiped;
+                Quantity = quantity;
+                IsEquiped = isEquiped;
             }
 
-            public void PrintHaveItemList(bool withNumber, int idx=0)
+            public void PlayerInventoryList(bool withNumber, int idx=0)
             {
                 Console.Write("-");
                 if (withNumber)
                 {
                     Console.Write("{0}", idx);
                 }
-                if (isEquiped)
+                if (IsEquiped)
                 {
                     Console.Write("[");
                     Console.ForegroundColor = ConsoleColor.Cyan;
@@ -130,7 +136,8 @@
                 }
                 Console.Write(Name);
                 Console.Write("  |  ");
-                Console.WriteLine("");
+                Console.WriteLine($"{Quantity}개");
+
             }
         }
 
@@ -139,6 +146,7 @@
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
+            Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
             SpartaDungeon sd = new SpartaDungeon();
             sd.PlayGame();
         }
@@ -147,13 +155,13 @@
         {
             // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
-            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 500);
-            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80, 1000);
-            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50, 800);
+            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 300);
+            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80, 800);
+            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50, 500);
 
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
-            List<Item> haveItems = new List<Item>();//가지고 있는 아이템 리스트
+            List<Item> haveItem = new List<Item>();
             
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
@@ -170,13 +178,13 @@
                 }
                 return choice;
             }
-            public void ItemTable() // 드랍 테이블 보관용 아이템 메서드
+            public void ItemTable() // 아이템 리스트 보관용 메서드
             {
-                items.Add(new Item("낡은 검", 0, 3, 0, 500,false));   // 무기, 공격력 3, 방어력 0, 가격 500
-                items.Add(new Item("보통 검", 0, 7, 0, 1000, false));  // 무기, 공격력 7, 방어력 0, 가격 1000
-                items.Add(new Item("낡은 갑옷", 1, 0, 7, 800, false));  // 방어구, 공격력 0, 방어력 7, 가격 800
-                items.Add(new Item("보통 갑옷", 1, 0, 15, 1300, false)); // 방어구, 공격력 0, 방어력 15, 가격 1300
-                items.Add(new Item("체력 포션", 2, 0, 0, 200, false));  // 소모품, 공격력 0, 방어력 0, 가격 200
+                items.Add(new Item("낡은 검", 0, 3, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
+                items.Add(new Item("보통 검", 0, 7, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
+                items.Add(new Item("낡은 갑옷", 1, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
+                items.Add(new Item("보통 갑옷", 1, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
+                items.Add(new Item("잡동사니", 2, 0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
             }
 
             public void PlayGame() // 게임 시작 메서드
@@ -184,7 +192,7 @@
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
-                ItemTable(); // 드랍 테이블 초기화
+                ItemTable(); // 아이템 리스트 보관용 메서드 초기화
                 Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사");
                 switch (ChoiceInput(1, 2)) // 직업 선택
                 {
@@ -218,7 +226,7 @@
                             BattleStart();
                             break;
                         case 3:
-                            Inventory();
+                            InventoryMenu(); // 아이템 획득 테스트 때문에 임시로 추가
                             break;
                     }
                 }
@@ -279,13 +287,13 @@
                 Console.ReadLine();
             }
 
-            public void Inventory()  // 인벤토리
+            public void InventoryMenu()  // 인벤토리
             {
-                haveItems.Add(items[0]);
+                haveItem.Add(items[0]);
                 Console.Clear();
                 Console.WriteLine("인벤토리");
                 Console.WriteLine("아이템을 관리할 수 있습니다.\n \n [아이템 목록]");
-                if (haveItems.Count <= 0)
+                if (haveItem.Count <= 0)
                 {
                     Console.WriteLine("가진 아이템이 없습니다.");
                 }
@@ -293,7 +301,7 @@
                 {
                     for (int i = 0; i <= Item.itemCount; i++)
                     {
-                        haveItems[i].PrintHaveItemList(false, 0);
+                        haveItem[i].PlayerInventoryList(false, 0);
                     }
                 }
                 Console.WriteLine("1. 장착관리 \n0. 뒤로가기");
@@ -314,11 +322,11 @@
                 Console.WriteLine("[아이템 목록]");
                 for(int i = 0; i <= Item.itemCount; i++)
                 {
-                    haveItems[i].PrintHaveItemList(true,i+1);
+                    haveItem[i].PlayerInventoryList(true,i+1);
                 }
 
                 Console.WriteLine("\n0.돌아가기");
-                int keyInput = ChoiceInput(0,haveItems.Count);
+                int keyInput = ChoiceInput(0,haveItem.Count);
                 switch(keyInput)
                 {
                     case 0:
@@ -332,7 +340,7 @@
 
             private void ItemEpuipToggle(int idx)
             {
-                haveItems[idx].isEquiped = !haveItems[idx].isEquiped;
+                haveItem[idx].IsEquiped = !haveItem[idx].IsEquiped;
             }
 
             public void BattleStart() // 2. 전투 시작
@@ -355,14 +363,17 @@
                 while (0 < player.Hp) // 전투 시작 플레이어 턴
                 {
                     BattleField();
-                    Console.WriteLine("\n\n1. 공격\n2. 스킬");
-                    switch (ChoiceInput(1, 2))
+                    Console.WriteLine("\n\n1. 공격\n2. 스킬\n3. 회복 아이템");
+                    switch (ChoiceInput(1, 3))
                     {
                         case 1:
                             Attack();
                             break;
                         case 2:
                             Skill();
+                            break;
+                        case 3:
+                            HpRecovery();
                             break;
                     }
                     if (CheckMonsters() == 0) break;
@@ -678,22 +689,29 @@
                             if (2 <= CheckMonsters())
                             {
                                 int atk = monsters.Count - 1;
+                                int next = 1;
                                 for (int i = 0; i < monsters.Count; i++)
                                 {
                                     if (0 < monsterHp[atk]) break;
                                     atk--;
                                 }
-                                int hp1 = monsterHp[atk]; int hp2 = monsterHp[atk - 1];
+                                while (true)
+                                {
+                                    if (0 < monsterHp[atk - next]) break;
+                                    next++;
+                                }
+                                int hp1 = monsterHp[atk]; int hp2 = monsterHp[atk - next];
+                                if (monsterHp[atk - next] < 0) next -= 1;
                                 monsterHp[atk] -= player.SkillAtk + 10;
                                 if (monsterHp[atk] < 0)
-                                    monsterHp[atk - 1] += monsterHp[atk];
+                                    monsterHp[atk - next] += monsterHp[atk];
                                 BattleField();
                                 Console.WriteLine($"\n\n{player.Name} 의 아이스 스피어!\n");
                                 if (monsterHp[atk] < 0)
-                                    Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk - 1]}]");
+                                    Console.WriteLine($"Lv.{monsters[atk - next].Level} {monsters[atk - next].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk - next]}]");
                                 Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk]}]");
-                                if (monsterHp[atk - 1] <= 0)
-                                    Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {hp2} -> Dead");
+                                if (monsterHp[atk - next] <= 0)
+                                    Console.WriteLine($"\nLv.{monsters[atk - next].Level} {monsters[atk - next].Name}\nHP {hp2} -> Dead");
                                 if (monsterHp[atk] <= 0)
                                     Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {hp1} -> Dead");
                                 Console.WriteLine("\n\nEnter. 다음");
@@ -799,7 +817,7 @@
 
                 void Victory() // 전투 승리 결과출력
                 {
-                    for (int i = 0; i < monsters.Count;i++)
+                    for (int i = 0; i < monsters.Count; i++)
                     {
                         player.Exp += monsters[i].DropExp;
                     }
@@ -836,9 +854,8 @@
                 }
                 void GetRewards() // 던전 보상 메서드
                 {
+                    Console.Clear();
                     Random r = new Random(); // 랜덤 객체 생성, 랜덤 숫자를 생성하려고
-                    Dictionary<string, int> itemCounts = new Dictionary<string, int>();
-                    // 딕셔너리? => string(아이템 이름), int(아이템 수량)을 가진 객체 생성,  아이템 이름으로 수량 추적
                     int totalGold = 0; //획득 골드 표시하려고, 일단 초기화
 
                     for (int i = 0; i < monsters.Count; i++) // 몬스터 리스트 수 만큼 반복
@@ -849,33 +866,198 @@
                             int itemIdx = r.Next(items.Count); // 아이템 리스트 내에서 랜덤한 인덱스 선택
                             Item dropItem = items[itemIdx]; // 선택한 인덱스에 해당하는 아이템 가져 옴
 
-                            if (itemCounts.ContainsKey(dropItem.Name)) // 이미 획득한 아이템이면
-                            // ContainsKey -> 딕셔너리랑 같이 씀        아이템 이름 - 번호   
-                            // dropItem.Name = 아이템 이름 문자열
+                            //
+                            var existingItem = haveItem.FirstOrDefault(it => it.Name == dropItem.Name);
+                            if (existingItem != null)
                             {
-                                itemCounts[dropItem.Name]++;  // 이미 있는 템이면 수량 1 +
+                                existingItem.Quantity++; // 이미 있는 아이템이면 수량 증가
                             }
                             else
                             {
-                                itemCounts.Add(dropItem.Name, 1); // 없으면 새로 만들고 1개
+                                haveItem.Add(new Item(dropItem.Name, dropItem.Type, dropItem.Atk, dropItem.Def, dropItem.Gold)); // 새 아이템 추가
+                                Item.itemCount++;
                             }
                         }
                     }
-                    Console.WriteLine("[획득 아이템]");
-                    Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("\n[획득 아이템]\n");
+                    Console.ResetColor();
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.Write(" " + $"{totalGold}");
                     Console.ResetColor();
+                    player.Gold += totalGold;
                     Console.Write(" Gold\n");
-                    foreach (var item in itemCounts) // 획득한 아이템의 이름과 수량을 순회
+                    foreach (var item in haveItem) // 아이템의 이름과 수량을 순회
                     {
                         Console.WriteLine("");
-                        Console.Write(item.Key + " - "); // item.Key = 아이템 이름
+                        Console.Write($"{item.Name} - "); // 아이템 이름
                         Console.ForegroundColor = ConsoleColor.Magenta;
-                        Console.Write(item.Value); // item.Value = 아이템 수량
+                        Console.Write(item.Quantity); // 아이템 수량
                         Console.ResetColor();
-                        Console.Write(" 개");
-                        Console.WriteLine("");
+                        Console.Write(" 개\n");
+                    }
+                }
+                void HpRecovery()
+                {
+                    Console.Clear();
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("[회복]\n");
+                    Console.ResetColor();
+                    Console.Write("체력, 마나 포션을 사용하면 Hp/Mp를 ");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write("30");
+                    Console.ResetColor();
+                    Console.Write(" 회복 할 수 있습니다.\n");
+                    Console.Write("\n(남은 체력 포션 : ");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write(player.HpPotion);
+                    Console.ResetColor();
+                    Console.Write(" )\n");
+                    Console.Write("\n(남은 마나 포션 : ");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write(player.MpPotion);
+                    Console.ResetColor();
+                    Console.Write(" )\n");
+
+                    while (true)
+                    {
+                        Console.WriteLine("\n1. 체력 회복 \n2. 마나 회복 \n3. 돌아가기");
+                        switch (ChoiceInput(1, 3))
+                        {
+                            case 1:
+                                UseHpPotion();
+                                break;
+                            case 2:
+                                UseMpPotion();
+                                break;
+                            case 3:
+                                // 전투 중인 곳으로 돌아가기
+                                return;
+                        }
+                    }
+                }
+                void UseHpPotion()
+                {
+                    if (player.HpPotion > 0)
+                    {
+                        if (player.Hp < player.MaxHp)
+                        {
+                            int currentHp = player.Hp; // 현재 체력 저장, 플레이어hp
+                            player.Hp = Math.Min(player.Hp + 30, player.MaxHp);
+                            int recoveryHp = player.Hp - currentHp; // 회복량 계산 
+                            player.HpPotion--; // 1개 소모
+                            Console.Write("\n체력을 ");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write(recoveryHp); // 회복량 출력
+                            Console.ResetColor();
+                            Console.Write("회복 하였습니다.\n");
+                            Console.WriteLine("\n");
+                            Console.Write("플레이어의 현재 체력 : ");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write(player.Hp);
+                            Console.ResetColor();
+                            Console.WriteLine();
+                            Console.Write("남은 체력 포션 : ");
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.Write(player.HpPotion);
+                            Console.ResetColor();
+                            Console.WriteLine();
+                        }
+                        else if (player.Hp >= player.MaxHp)
+                        {
+                            Console.Write("이미 ");
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write("최대 체력");
+                            Console.ResetColor();
+                            Console.Write("입니다.");
+                            Console.WriteLine();
+                        }
+
+                        Console.Write("입니다.");
+                        Console.WriteLine();
+                    }
+                    else
+                    {
+                        Console.Write("체력 포션이 ");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("부족");
+                        Console.ResetColor();
+                        Console.Write("합니다!");
+                        Console.WriteLine();
+                    }
+                }
+                void UseMpPotion()
+                {
+                    if (player.MpPotion > 0)
+                    {
+                        if (player.Mp < player.MaxMp)
+                        {
+                            int currentMp = player.Mp; // 현재 마나 저장, 플레이어hp
+                            player.Mp = Math.Min(player.Mp + 30, player.MaxMp);
+                            int recoveryMp = player.Mp - currentMp; // 회복량 계산 
+                            player.MpPotion--; // 1개 소모
+                            Console.Write("\n체력을 ");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write(recoveryMp); // 회복량 출력
+                            Console.ResetColor();
+                            Console.Write("회복 하였습니다.\n");
+                            Console.WriteLine("\n");
+                            Console.Write("플레이어의 현재 마나 : ");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write(player.Mp);
+                            Console.ResetColor();
+                            Console.WriteLine();
+                            Console.Write("남은 마나 포션 : ");
+                            Console.ForegroundColor = ConsoleColor.Blue;
+                            Console.Write(player.MpPotion);
+                            Console.ResetColor();
+                            Console.WriteLine();
+                        }
+                        else if (player.Mp >= player.MaxMp)
+                        {
+                            Console.Write("이미 ");
+                            Console.ForegroundColor = ConsoleColor.Blue;
+                            Console.Write("최대 마나");
+                            Console.ResetColor();
+                            Console.Write("입니다.");
+                            Console.WriteLine();
+                        }
+                        else
+                        {
+                            Console.Write("마나 포션이 ");
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write("부족");
+                            Console.ResetColor();
+                            Console.Write("합니다!");
+                            Console.WriteLine();
+                        }
+                    }
+                }
+            }
+            void Inventory() // 플레이어 임시 인벤토리 메서드   (BattleStart 메서드 밖에 있음)
+            {
+                Console.Clear();
+                Console.WriteLine("[임시 인벤토리]\n");
+
+                foreach (var item in haveItem)  // 아이템의 이름과 수량을 순회
+                {
+                    Console.WriteLine($"{item.Name} - {item.Quantity} 개");
+                    // {item.Name}랑 {item.Quantity} 사이에 아이템 관련 프로퍼티(속성)들 넣으면 될 듯?  템설명, 공격력, 방어력 등등
+                }
+
+                Console.WriteLine("\n1. 장착하기 \n2. 돌아가기");
+                while (true)
+                {
+                    switch (ChoiceInput(1, 2))
+                    {
+                        case 1:
+                            //장착 관련 메서드();
+                            break;
+                        case 2:
+                            PlayGame();
+                            // 아직 나가는 곳 안 만듦, PlayGame(); 가면 아이템 획득 등 정보 초기화 되서 시작 메뉴 페이지 분리해야 할 듯.
+                            break;
+                            //일단 상태창으로 임시 설정
                     }
                 }
             }
