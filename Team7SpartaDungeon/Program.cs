@@ -1,4 +1,6 @@
-﻿namespace Team7SpartaDungeon
+﻿using System.Net;
+
+namespace Team7SpartaDungeon
 {
     internal class Program
     {
@@ -100,7 +102,7 @@
         }
         public class Item
         {
-            public string Name { get; }
+            public string Name { get; set; }
             public int Type { get; }
             public int Atk { get; set; }
             public int Def { get; set; }
@@ -108,7 +110,8 @@
             public int Quantity { get; set; } // 아이템 수량
             public bool IsEquiped { get; set; }
             public static int itemCount;
-            public Item(string name, int type, int atk, int def, int gold, int quantity = 1, bool isEquiped=false)
+            public static int dropItemCount;
+            public Item(string name, int type, int atk, int def, int gold, int quantity = 1, bool isEquiped = false)
             {
                 Name = name;
                 Type = type;
@@ -119,7 +122,7 @@
                 IsEquiped = isEquiped;
             }
 
-            public void PlayerInventoryList(bool withNumber, int idx=0)
+            public void PlayerInventoryList(bool withNumber, int idx = 0)
             {
                 Console.Write("-");
                 if (withNumber)
@@ -162,7 +165,8 @@
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
             List<Item> haveItem = new List<Item>();
-            
+            List<Item> dropItem = new List<Item>();
+
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
                 Console.WriteLine();
@@ -232,7 +236,7 @@
                 }
             }
 
-           
+
 
 
             //---------------------레벨업
@@ -254,7 +258,7 @@
                     }
 
                     player.Level += 1;
-                    
+
                     player.Def += 1;
                     if (player.Class == "전사")
                     {
@@ -320,18 +324,19 @@
                 Console.WriteLine("장착관리 \n보유 중인 아이템을 관리할 수 있습니다.");
                 Console.WriteLine("");
                 Console.WriteLine("[아이템 목록]");
-                for(int i = 0; i <= Item.itemCount; i++)
+                for (int i = 0; i <= Item.itemCount; i++)
                 {
-                    haveItem[i].PlayerInventoryList(true,i+1);
+                    haveItem[i].PlayerInventoryList(true, i + 1);
                 }
 
                 Console.WriteLine("\n0.돌아가기");
-                int keyInput = ChoiceInput(0,haveItem.Count);
-                switch(keyInput)
+                int keyInput = ChoiceInput(0, haveItem.Count);
+                switch (keyInput)
                 {
                     case 0:
                         break;
-                    default: ItemEpuipToggle(keyInput-1);
+                    default:
+                        ItemEpuipToggle(keyInput - 1);
                         Equip();
                         break;
                 }
@@ -864,18 +869,23 @@
                         if (items.Count > 0) // 아이템 리스트에 아이템이 있는지 확인
                         {
                             int itemIdx = r.Next(items.Count); // 아이템 리스트 내에서 랜덤한 인덱스 선택
-                            Item dropItem = items[itemIdx]; // 선택한 인덱스에 해당하는 아이템 가져 옴
+                            dropItem.Add(items[itemIdx]);
+                            Item.dropItemCount += itemIdx;
 
                             //
-                            var existingItem = haveItem.FirstOrDefault(it => it.Name == dropItem.Name);
+                            var existingItem = haveItem.FirstOrDefault(it => it.Name == dropItem[i].Name);
                             if (existingItem != null)
                             {
                                 existingItem.Quantity++; // 이미 있는 아이템이면 수량 증가
                             }
                             else
                             {
-                                haveItem.Add(new Item(dropItem.Name, dropItem.Type, dropItem.Atk, dropItem.Def, dropItem.Gold)); // 새 아이템 추가
+
+                                haveItem.Add(dropItem[i]); // 새 아이템 추가
                                 Item.itemCount++;
+
+
+
                             }
                         }
                     }
@@ -1034,33 +1044,7 @@
                     }
                 }
             }
-            void Inventory() // 플레이어 임시 인벤토리 메서드   (BattleStart 메서드 밖에 있음)
-            {
-                Console.Clear();
-                Console.WriteLine("[임시 인벤토리]\n");
-
-                foreach (var item in haveItem)  // 아이템의 이름과 수량을 순회
-                {
-                    Console.WriteLine($"{item.Name} - {item.Quantity} 개");
-                    // {item.Name}랑 {item.Quantity} 사이에 아이템 관련 프로퍼티(속성)들 넣으면 될 듯?  템설명, 공격력, 방어력 등등
-                }
-
-                Console.WriteLine("\n1. 장착하기 \n2. 돌아가기");
-                while (true)
-                {
-                    switch (ChoiceInput(1, 2))
-                    {
-                        case 1:
-                            //장착 관련 메서드();
-                            break;
-                        case 2:
-                            PlayGame();
-                            // 아직 나가는 곳 안 만듦, PlayGame(); 가면 아이템 획득 등 정보 초기화 되서 시작 메뉴 페이지 분리해야 할 듯.
-                            break;
-                            //일단 상태창으로 임시 설정
-                    }
-                }
-            }
+          
         }
     }
 }
