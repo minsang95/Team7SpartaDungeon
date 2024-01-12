@@ -283,7 +283,8 @@
             {
                 haveItems.Add(items[0]);
                 Console.Clear();
-                Console.WriteLine("인벤토리 \n 아이템을 관리할 수 있습니다.");
+                Console.WriteLine("인벤토리");
+                Console.WriteLine("아이템을 관리할 수 있습니다.\n \n [아이템 목록]");
                 if (haveItems.Count <= 0)
                 {
                     Console.WriteLine("가진 아이템이 없습니다.");
@@ -295,11 +296,10 @@
                         haveItems[i].PrintHaveItemList(false, 0);
                     }
                 }
-                Console.WriteLine("1. 장착관리\n0. 뒤로가기");
+                Console.WriteLine("1. 장착관리 \n0. 뒤로가기");
                 switch (ChoiceInput(0, 1))
                 {
                     case 0:
-                        Console.ReadLine();
                         break;
                     case 1:
                         Equip();
@@ -310,16 +310,18 @@
             {
                 Console.Clear();
                 Console.WriteLine("장착관리 \n보유 중인 아이템을 관리할 수 있습니다.");
+                Console.WriteLine("");
+                Console.WriteLine("[아이템 목록]");
                 for(int i = 0; i <= Item.itemCount; i++)
                 {
                     haveItems[i].PrintHaveItemList(true,i+1);
                 }
-                Console.WriteLine("Enter.돌아가기");
+
+                Console.WriteLine("\n0.돌아가기");
                 int keyInput = ChoiceInput(0,haveItems.Count);
                 switch(keyInput)
                 {
                     case 0:
-                        Console.ReadLine();
                         break;
                     default: ItemEpuipToggle(keyInput-1);
                         Equip();
