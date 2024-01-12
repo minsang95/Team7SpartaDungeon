@@ -1,4 +1,6 @@
-﻿namespace Team7SpartaDungeon
+﻿using System.Security.Cryptography;
+
+namespace Team7SpartaDungeon
 {
     internal class Program
     {
@@ -101,6 +103,7 @@
                 Gold = gold;
             }
         }
+
         public class Item
         {
             public string Name { get; }
@@ -122,6 +125,7 @@
         }
 
 
+
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
@@ -132,6 +136,10 @@
         //----------------------------------------------------------------------------------------------------------------------------------
         public class SpartaDungeon
         {
+            static int dungeonFloor = 0;       // 던전 층수
+
+
+
             // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
             Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 300);
@@ -166,10 +174,14 @@
 
             public void PlayGame() // 게임 시작 메서드
             {
+
+
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
+
                 ItemTable(); // 아이템 리스트 보관용 메서드 초기화
+
                 Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사");
                 switch (ChoiceInput(1, 2)) // 직업 선택
                 {
@@ -193,8 +205,10 @@
                 while (true)
                 {
                     Console.Clear();
-                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작");
+
+                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )");
                     switch (ChoiceInput(1, 3)) // 최초 선택지
+
                     {
                         case 1:
                             Status();
@@ -225,6 +239,7 @@
                     {
                         player.MaxExp += (i * 30);
                     }
+
 
                     player.Level += 1;
                     player.Atk += 5;
@@ -259,26 +274,57 @@
             }
             public void BattleStart() // 2. 전투 시작
             {
+                int diff = dungeonFloor * 2;  // 난이도 보정
+
+
                 List<Monster> monsters = new List<Monster>(); // 몬스터 리스트 monsters 생성
                 Random r = new Random();
                 int beforeHp = player.Hp;
                 int beforeMp = player.Mp;
                 int beforeExp = player.Exp;
-                for (int i = 0; i < r.Next(1, 5); i++)
+                for (int i = 0; i < dungeon.Count; i++)
+                {
+                    Monster newLv = dungeon[i];
+                    newLv.Level += 1;
+                    dungeon[i] = newLv;
+
+
+                    Monster newHp = dungeon[i];
+                    newHp.Hp += diff;
+                    dungeon[i] = newHp;
+
+                    Monster newAtk = dungeon[i];
+                    newAtk.Atk += diff;
+                    dungeon[i] = newAtk;
+
+                    Monster newGold = dungeon[i];
+                    newAtk.Gold += 40 * diff;
+                    dungeon[i] = newGold;
+
+                }
+
+                for (int i = 0; i < r.Next((1 + diff), (5 + diff)); i++)   //난이도에 따른 몹 마릿수 증가
                 {
                     monsters.Add(dungeon[r.Next(0, dungeon.Count)]);      // 몬스터 리스트 monsters 에 게임시작시 만들어둔 몬스터 리스트 dungeon 에 저장된 몬스터 랜덤 추가
                 }
                 int[] monsterHp = new int[monsters.Count];
                 for (int i = 0; i < monsters.Count; i++)
                 {
+
                     monsterHp[i] = monsters[i].Hp;            // 몬스터의 마릿수와 동일한크기의 int 배열 생성 후, 몬스터의 체력 정보 저장
+
                 }
                 int[] monsterBurn = new int[monsters.Count];
                 while (0 < player.Hp) // 전투 시작 플레이어 턴
                 {
                     BattleField();
+
                     Console.WriteLine("\n\n1. 공격\n2. 스킬\n3. 회복 아이템");
                     switch (ChoiceInput(1, 3))
+
+
+ 
+
                     {
                         case 1:
                             Attack();
@@ -743,11 +789,21 @@
                     Console.ResetColor();
                     Console.WriteLine($"던전에서 몬스터 {monsters.Count}마리를 잡았습니다.\n\n");
                     Console.WriteLine($"Lv. {player.Level} {player.Name}\nHP {beforeHp} -> {player.Hp}\nMP {beforeMp} -> {player.Mp}\nExp {beforeExp} -> {player.Exp}\n\n");
+                    Console.Write("던전 층수" + (dungeonFloor + 1) + "층 - >");
+                    dungeonFloor++;
+
+                    Console.Write((dungeonFloor + 1) + "층");
                     Console.ReadKey();
                     LevelUp();
                     GetRewards();
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
+
+
+
+
+
+
                 }
 
                 void Lose() // 전투 패배 결과출력
