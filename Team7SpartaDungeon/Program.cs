@@ -285,7 +285,7 @@ namespace Team7SpartaDungeon
                 for (int i = 0; i < dungeon.Count; i++)
                 {
                     Monster newLv = dungeon[i];
-                    newLv.Level += 1;
+                    newLv.Level += diff/2;
                     dungeon[i] = newLv;
 
 
