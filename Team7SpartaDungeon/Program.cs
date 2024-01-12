@@ -284,7 +284,9 @@ namespace Team7SpartaDungeon
                 int beforeExp = player.Exp;
                 for (int i = 0; i < dungeon.Count; i++)
                 {
-
+                    Monster newLv = dungeon[i];
+                    newLv.Level += 1;
+                    dungeon[i] = newLv;
 
 
                     Monster newHp = dungeon[i];
