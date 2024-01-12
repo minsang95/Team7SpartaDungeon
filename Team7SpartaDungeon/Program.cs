@@ -18,7 +18,7 @@
             public int Gold { get; set; }
             public int Exp { get; set; }
             public int MaxExp { get; set; }
-
+            public int HpPotion { get; set; }
             public List<bool> AvailableSkill { get; set; }
             public List<string> Skill { get; set; }
             public int BurningDmg { get; set; }
@@ -41,6 +41,7 @@
                 Gold = 1500;
                 Exp = 0;
                 MaxExp = 30;
+                HpPotion = 3;
                 AvailableSkill = new List<bool>();
                 Skill = new List<string>();
             }
@@ -63,6 +64,7 @@
                 Gold = 1500;
                 Exp = 0;
                 MaxExp = 30;
+                HpPotion = 3;
                 AvailableSkill = new List<bool>();
                 Skill = new List<string>();
                 BurningDmg = 5;
@@ -115,6 +117,7 @@
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
+            Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
             SpartaDungeon sd = new SpartaDungeon();
             sd.PlayGame();
         }
@@ -123,9 +126,9 @@
         {
             // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
-            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 500);
-            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80, 1000);
-            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50, 800);
+            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 300);
+            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80, 800);
+            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50, 500);
 
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
@@ -150,7 +153,7 @@
                 items.Add(new Item("보통 검", 0, 7, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
                 items.Add(new Item("낡은 갑옷", 1, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
                 items.Add(new Item("보통 갑옷", 1, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
-                items.Add(new Item("체력 포션", 2, 0, 0, 200));  // 소모품, 공격력 0, 방어력 0, 가격 200
+                items.Add(new Item("잡동사니", 2, 0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
             }
 
             public void PlayGame() // 게임 시작 메서드
@@ -263,14 +266,17 @@
                 while (0 < player.Hp) // 전투 시작 플레이어 턴
                 {
                     BattleField();
-                    Console.WriteLine("\n\n1. 공격\n2. 스킬");
-                    switch (ChoiceInput(1, 2))
+                    Console.WriteLine("\n\n1. 공격\n2. 스킬\n3. 회복 아이템");
+                    switch (ChoiceInput(1, 3))
                     {
                         case 1:
                             Attack();
                             break;
                         case 2:
                             Skill();
+                            break;
+                        case 3:
+                            HpRecovery();
                             break;
                     }
                     if (CheckMonsters() == 0) break;
@@ -707,7 +713,7 @@
 
                 void Victory() // 전투 승리 결과출력
                 {
-                    for (int i = 0; i < monsters.Count;i++)
+                    for (int i = 0; i < monsters.Count; i++)
                     {
                         player.Exp += monsters[i].DropExp;
                     }
@@ -744,6 +750,7 @@
                 }
                 void GetRewards() // 던전 보상 메서드
                 {
+                    Console.Clear();
                     Random r = new Random(); // 랜덤 객체 생성, 랜덤 숫자를 생성하려고
                     Dictionary<string, int> itemCounts = new Dictionary<string, int>();
                     // 딕셔너리? => string(아이템 이름), int(아이템 수량)을 가진 객체 생성,  아이템 이름으로 수량 추적
@@ -769,11 +776,13 @@
                             }
                         }
                     }
-                    Console.WriteLine("[획득 아이템]");
-                    Console.WriteLine("");
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine("\n[획득 아이템]\n");
+                    Console.ResetColor();
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.Write(" " + $"{totalGold}");
                     Console.ResetColor();
+                    player.Gold += totalGold;
                     Console.Write(" Gold\n");
                     foreach (var item in itemCounts) // 획득한 아이템의 이름과 수량을 순회
                     {
@@ -782,8 +791,85 @@
                         Console.ForegroundColor = ConsoleColor.Magenta;
                         Console.Write(item.Value); // item.Value = 아이템 수량
                         Console.ResetColor();
-                        Console.Write(" 개");
-                        Console.WriteLine("");
+                        Console.Write(" 개\n");
+                    }
+                }
+                void HpRecovery()
+                {
+                    Console.Clear();
+                    Console.ForegroundColor= ConsoleColor.Yellow;
+                    Console.WriteLine("[회복]\n");
+                    Console.ResetColor();
+                    Console.Write("포션을 사용하면 체력을 ");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write("30");
+                    Console.ResetColor();
+                    Console.Write(" 회복 할 수 있습니다.\n");
+                    Console.Write("\n(남은포션 : ");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write(player.HpPotion);
+                    Console.ResetColor();
+                    Console.Write(" )\n");
+
+                    while (true)
+                    {
+                        Console.WriteLine("\n1. 포션 사용 하기\n2. 돌아가기");
+                        switch (ChoiceInput(1, 2))
+                        {
+                            case 1:
+                                UsePotion();
+                                break;
+                            case 2:
+                                // 전투 중인 곳으로 돌아가기
+                                return;
+                        }
+                    }
+                }
+                void UsePotion()
+                {
+                    if (player.HpPotion > 0)
+                    {
+                        if (player.Hp < player.MaxHp)
+                        {
+                            int currentHp = player.Hp; // 현재 체력 저장, 플레이어hp
+                            player.Hp = Math.Min(player.Hp + 30, player.MaxHp);
+                            int recoveryHp = player.Hp - currentHp; // 회복량 계산 
+                            player.HpPotion--; // 1개 소모
+                            Console.Write("\n체력을 ");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write(recoveryHp); // 회복량 출력
+                            Console.ResetColor();
+                            Console.Write("회복 하였습니다.\n");
+                            Console.WriteLine("\n");
+                            Console.Write("플레이어의 현재 체력 : ");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write(player.Hp);
+                            Console.ResetColor();
+                            Console.WriteLine();
+                            Console.Write("남은 포션 : ");
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.Write(player.HpPotion);
+                            Console.ResetColor(); 
+                            Console.WriteLine();
+                        }
+                        else
+                        {
+                            Console.Write("이미 ");
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write("최대 체력");
+                            Console.ResetColor();
+                            Console.Write("입니다.");
+                            Console.WriteLine();
+                        }
+                    }
+                    else
+                    {
+                        Console.Write("포션이 ");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("부족");
+                        Console.ResetColor();
+                        Console.Write("합니다!");
+                        Console.WriteLine();
                     }
                 }
             }
