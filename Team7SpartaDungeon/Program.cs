@@ -105,17 +105,19 @@ namespace Team7SpartaDungeon
             public string Name { get; set; }
             public int Type { get; }
             public int Atk { get; set; }
+            public int SkillAtk { get; set; }
             public int Def { get; set; }
             public int Gold { get; set; }
             public int Quantity { get; set; } // 아이템 수량
             public bool IsEquiped { get; set; }
             public static int itemCount;
             public static int dropItemCount;
-            public Item(string name, int type, int atk, int def, int gold, int quantity = 1, bool isEquiped = false)
+            public Item(string name, int type, int atk,int skillAtk, int def, int gold, int quantity = 1, bool isEquiped = false)
             {
                 Name = name;
                 Type = type;
                 Atk = atk;
+                SkillAtk = skillAtk;
                 Def = def;
                 Gold = gold;
                 Quantity = quantity;
@@ -166,6 +168,7 @@ namespace Team7SpartaDungeon
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
             List<Item> haveItem = new List<Item>();
             List<Item> dropItem = new List<Item>();
+            List<Item> equipItem = new List<Item>();
 
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
@@ -184,11 +187,11 @@ namespace Team7SpartaDungeon
             }
             public void ItemTable() // 아이템 리스트 보관용 메서드
             {
-                items.Add(new Item("낡은 검", 0, 3, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
-                items.Add(new Item("보통 검", 0, 7, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
-                items.Add(new Item("낡은 갑옷", 1, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
-                items.Add(new Item("보통 갑옷", 1, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
-                items.Add(new Item("잡동사니", 2, 0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
+                items.Add(new Item("낡은 검", 0, 3,0, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
+                items.Add(new Item("보통 검", 0, 7,0, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
+                items.Add(new Item("낡은 갑옷", 1, 0,0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
+                items.Add(new Item("보통 갑옷", 1, 0, 0,15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
+                items.Add(new Item("잡동사니", 2, 0,0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
             }
 
             public void PlayGame() // 게임 시작 메서드
@@ -343,9 +346,13 @@ namespace Team7SpartaDungeon
 
             }
 
+            
+
             private void ItemEpuipToggle(int idx)
             {
                 haveItem[idx].IsEquiped = !haveItem[idx].IsEquiped;
+                player.Atk += haveItem[idx].Atk;
+               
             }
 
             public void BattleStart() // 2. 전투 시작
@@ -1044,7 +1051,7 @@ namespace Team7SpartaDungeon
                     }
                 }
             }
-          
+
         }
     }
 }
