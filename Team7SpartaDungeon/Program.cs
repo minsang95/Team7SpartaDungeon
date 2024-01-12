@@ -592,22 +592,29 @@
                             if (2 <= CheckMonsters())
                             {
                                 int atk = monsters.Count - 1;
+                                int next = 1;
                                 for (int i = 0; i < monsters.Count; i++)
                                 {
                                     if (0 < monsterHp[atk]) break;
                                     atk--;
                                 }
-                                int hp1 = monsterHp[atk]; int hp2 = monsterHp[atk - 1];
+                                while (true)
+                                {
+                                    if (0 < monsterHp[atk - next]) break;
+                                    next++;
+                                }
+                                int hp1 = monsterHp[atk]; int hp2 = monsterHp[atk - next];
+                                if (monsterHp[atk - next] < 0) next -= 1;
                                 monsterHp[atk] -= player.SkillAtk + 10;
                                 if (monsterHp[atk] < 0)
-                                    monsterHp[atk - 1] += monsterHp[atk];
+                                    monsterHp[atk - next] += monsterHp[atk];
                                 BattleField();
                                 Console.WriteLine($"\n\n{player.Name} 의 아이스 스피어!\n");
                                 if (monsterHp[atk] < 0)
-                                    Console.WriteLine($"Lv.{monsters[atk - 1].Level} {monsters[atk - 1].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk - 1]}]");
+                                    Console.WriteLine($"Lv.{monsters[atk - next].Level} {monsters[atk - next].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk - next]}]");
                                 Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk]}]");
-                                if (monsterHp[atk - 1] <= 0)
-                                    Console.WriteLine($"\nLv.{monsters[atk - 1].Level} {monsters[atk - 1].Name}\nHP {hp2} -> Dead");
+                                if (monsterHp[atk - next] <= 0)
+                                    Console.WriteLine($"\nLv.{monsters[atk - next].Level} {monsters[atk - next].Name}\nHP {hp2} -> Dead");
                                 if (monsterHp[atk] <= 0)
                                     Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {hp1} -> Dead");
                                 Console.WriteLine("\n\nEnter. 다음");
