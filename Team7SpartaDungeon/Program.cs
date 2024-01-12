@@ -88,8 +88,6 @@ namespace Team7SpartaDungeon
             public int Def { get; set; }
             public int Hp { get; set; }
             public int DropExp { get; }
-            public int Burning { get; set; }
-            public int BurningDmg { get; set; }
             public int Gold { get; set; }
             public Monster(string name, int level, int atk, int def, int hp, int dropExp, int gold)
 
