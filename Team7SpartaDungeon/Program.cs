@@ -181,8 +181,13 @@ namespace Team7SpartaDungeon
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
-                
-                
+                dungeon.Add(minion);
+                dungeon.Add(siegeMinion);
+                dungeon.Add(voidBug);
+                dungeon.Add(minion);
+                dungeon.Add(siegeMinion);
+                dungeon.Add(voidBug);
+
 
                 ItemTable(); // 아이템 리스트 보관용 메서드 초기화
 
@@ -286,25 +291,7 @@ namespace Team7SpartaDungeon
                 int beforeHp = player.Hp;
                 int beforeMp = player.Mp;
                 int beforeExp = player.Exp;
-                for (int i = 0; i < dungeon.Count; i++)
-                {
-                    Monster newLv = dungeon[i];
-                    newLv.Level += diff / 2;
-                    dungeon[i] = newLv;
-
-                    Monster newHp = dungeon[i];
-                    newHp.Hp += diff;
-                    dungeon[i] = newHp;
-
-                    Monster newAtk = dungeon[i];
-                    newAtk.Atk += diff;
-                    dungeon[i] = newAtk;
-
-                    Monster newGold = dungeon[i];
-                    newAtk.Gold += 40 * diff;
-                    dungeon[i] = newGold;
-
-                }
+                
 
                 for (int i = 0; i < r.Next((1 + diff), (5 + diff)); i++)   //난이도에 따른 몹 마릿수 증가
                 {
@@ -794,21 +781,37 @@ namespace Team7SpartaDungeon
                     Console.WriteLine($"Lv. {player.Level} {player.Name}\nHP {beforeHp} -> {player.Hp}\nMP {beforeMp} -> {player.Mp}\nExp {beforeExp} -> {player.Exp}\n\n");
                     Console.Write("던전 층수" + (dungeonFloor + 1) + "층 - >");
                     dungeonFloor++;
-
+                    int diff = dungeonFloor * 2;                                // 난이도 보정
                     Console.Write((dungeonFloor + 1) + "층");
+                    for (int i = 0; i < dungeon.Count; i++)                    // 승리시 층수와 함께 몹 능력치 증가
+                    {
+                        Monster newLv = dungeon[i];
+                        newLv.Level += diff;
+                        dungeon[i] = newLv;
+
+                        Monster newHp = dungeon[i];
+                        newHp.Hp += diff;
+                        dungeon[i] = newHp;
+
+                        Monster newAtk = dungeon[i];
+                        newAtk.Atk += diff;
+                        dungeon[i] = newAtk;
+
+                        Monster newGold = dungeon[i];
+                        newAtk.Gold += 40 * diff;
+                        dungeon[i] = newGold;
+
+                    }
                     Console.ReadKey();
                     LevelUp();
                     GetRewards();
-                    if (dungeonFloor % 3 == 0)                                          // 3층마다 이한솔매니저님 몹 추가,  짝수 층마다 잡몹 등장확률 추가
+                    
+                    if (dungeonFloor % 3 == 0)                                          // 3층마다 이한솔매니저님 몹 추가
                     {
                         dungeon.Add(Hansole);
                     }
-                    else if ( dungeonFloor % 2 == 0)
-                    {
-                        dungeon.Add(minion);
-                        dungeon.Add(siegeMinion);
-                        dungeon.Add(voidBug);
-                    }
+                   
+                    
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
 
