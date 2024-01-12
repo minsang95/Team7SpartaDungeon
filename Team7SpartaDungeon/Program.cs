@@ -168,7 +168,6 @@ namespace Team7SpartaDungeon
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
             List<Item> haveItem = new List<Item>();
             List<Item> dropItem = new List<Item>();
-            List<Item> equipItem = new List<Item>();
 
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
@@ -282,13 +281,43 @@ namespace Team7SpartaDungeon
 
                 }
             }
+            public int getBonusAtk()
+            {
+                int sum = 0;
+                for (int i = 0; i < haveItem.Count; i++)
+                {
+                    if (haveItem[i].IsEquiped) sum += haveItem[i].Atk;
+                }
+                return sum;
+            }
+            public int getBonusDef()
+            {
+                int sum = 0;
+                for (int i = 0; i < haveItem.Count; i++)
+                {
+                    if (haveItem[i].IsEquiped) sum += haveItem[i].Def;
+                }
+                return sum;
+            }
+            public int getBonusSkillAtk()
+            {
+                int sum = 0;
+                for (int i = 0; i < haveItem.Count; i++)
+                {
+                    if (haveItem[i].IsEquiped) sum += haveItem[i].SkillAtk;
+                }
+                return sum;
+            }
 
             public void Status() // 1. 상태 보기
             {
+                float bonusAtk = getBonusAtk();
+                int bonusDef = getBonusDef();
+                int bonusSkillAtk = getBonusSkillAtk();
                 Console.Clear();
                 Console.WriteLine($"캐릭터의 정보가 표시됩니다.\n\n" +
                                   $" 이름   : {player.Name}\n" +
-                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n 마법력 : {player.SkillAtk}\n" +
+                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk+bonusAtk}\n 방어력 : {player.Def+bonusDef}\n 마법력 : {player.SkillAtk+bonusSkillAtk}\n" +
                                   $" 체 력  : {player.Hp}/{player.MaxHp}\n 마 나  : {player.Mp}/{player.MaxMp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.MaxExp}\n\n" +
                                   $"Enter. 나가기");
                 Console.ReadLine();
@@ -296,7 +325,6 @@ namespace Team7SpartaDungeon
 
             public void InventoryMenu()  // 인벤토리
             {
-                haveItem.Add(items[0]);
                 Console.Clear();
                 Console.WriteLine("인벤토리");
                 Console.WriteLine("아이템을 관리할 수 있습니다.\n \n [아이템 목록]");
@@ -308,7 +336,7 @@ namespace Team7SpartaDungeon
                 {
                     for (int i = 0; i <= Item.itemCount; i++)
                     {
-                        haveItem[i].PlayerInventoryList(false, 0);
+                        haveItem[i].PlayerInventoryList(false, i+1);
                     }
                 }
                 Console.WriteLine("1. 장착관리 \n0. 뒤로가기");
@@ -327,10 +355,18 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("장착관리 \n보유 중인 아이템을 관리할 수 있습니다.");
                 Console.WriteLine("");
                 Console.WriteLine("[아이템 목록]");
-                for (int i = 0; i <= Item.itemCount; i++)
+                if (haveItem.Count >= 0)
                 {
-                    haveItem[i].PlayerInventoryList(true, i + 1);
+                    Console.WriteLine("가진 아이템이 없습니다.");
                 }
+                else
+                {
+                    for (int i = 0; i <= Item.itemCount; i++)
+                    {
+                        haveItem[i].PlayerInventoryList(true, i + 1);
+                    }
+                }
+              
 
                 Console.WriteLine("\n0.돌아가기");
                 int keyInput = ChoiceInput(0, haveItem.Count);
@@ -351,8 +387,6 @@ namespace Team7SpartaDungeon
             private void ItemEpuipToggle(int idx)
             {
                 haveItem[idx].IsEquiped = !haveItem[idx].IsEquiped;
-                player.Atk += haveItem[idx].Atk;
-               
             }
 
             public void BattleStart() // 2. 전투 시작
