@@ -782,7 +782,9 @@
 
                             //
                             var existingItem = player.Inventory.FirstOrDefault(it => it.Name == dropItem.Name);
-                            if (existingItem != null)
+                            // 플레이어 인벤토리에서 dropItem과 이름이 같은 아이템 찾아서 저장
+                            // FirstOrDefault : 조건 만족하는 첫 번째 요소만 반환 (existingItem에다가), 아니면 null
+                            if (existingItem != null) // null이 아니면 = 조건이 맞으면
                             {
                                 existingItem.Quantity++; // 이미 있는 아이템이면 수량 증가
                             }
@@ -947,7 +949,7 @@
                     }
                 }
             }
-            void Inventory() // 플레이어 임시 인벤토리 메서드   (BattleStart 메서드 밖에 있음)
+            void Inventory() // 플레이어 임시 인벤토리 메서드
             {
                 Console.Clear();
                 Console.WriteLine("[임시 인벤토리]\n");
