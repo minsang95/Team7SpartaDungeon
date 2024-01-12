@@ -213,15 +213,17 @@
                     }
 
                     player.Level += 1;
-                    player.Atk += 5;
+                    
                     player.Def += 1;
                     if (player.Class == "전사")
                     {
+                        player.Atk += 5;
                         player.MaxHp += 10;
                         player.MaxMp += 5;
                     }
                     else
                     {
+                        player.SkillAtk += 5;
                         player.MaxHp += 5;
                         player.MaxMp += 10;
                     }
