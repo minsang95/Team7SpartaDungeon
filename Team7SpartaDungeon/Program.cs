@@ -145,6 +145,7 @@ namespace Team7SpartaDungeon
             Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 300);
             Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80, 800);
             Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50, 500);
+            Monster Hansole = new Monster("이한솔매니저님", 5, 20, 0, 30, 100, 1000);
 
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
@@ -179,8 +180,11 @@ namespace Team7SpartaDungeon
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
+                
+                
 
                 ItemTable(); // 아이템 리스트 보관용 메서드 초기화
+
 
                 Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사");
                 switch (ChoiceInput(1, 2)) // 직업 선택
@@ -285,9 +289,8 @@ namespace Team7SpartaDungeon
                 for (int i = 0; i < dungeon.Count; i++)
                 {
                     Monster newLv = dungeon[i];
-                    newLv.Level += diff/2;
+                    newLv.Level += diff / 2;
                     dungeon[i] = newLv;
-
 
                     Monster newHp = dungeon[i];
                     newHp.Hp += diff;
@@ -322,8 +325,6 @@ namespace Team7SpartaDungeon
                     Console.WriteLine("\n\n1. 공격\n2. 스킬\n3. 회복 아이템");
                     switch (ChoiceInput(1, 3))
 
-
- 
 
                     {
                         case 1:
@@ -796,6 +797,16 @@ namespace Team7SpartaDungeon
                     Console.ReadKey();
                     LevelUp();
                     GetRewards();
+                    if (dungeonFloor % 3 == 0)                                          // 3층마다 이한솔매니저님 몹 추가,  짝수 층마다 잡몹 등장확률 추가
+                    {
+                        dungeon.Add(Hansole);
+                    }
+                    else if ( dungeonFloor % 2 == 0)
+                    {
+                        dungeon.Add(minion);
+                        dungeon.Add(siegeMinion);
+                        dungeon.Add(voidBug);
+                    }
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
 
