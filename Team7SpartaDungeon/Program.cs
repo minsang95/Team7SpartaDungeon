@@ -100,16 +100,40 @@
             public int Atk { get; set; }
             public int Def { get; set; }
             public int Gold { get; set; }
+            public bool isEquiped { get; set; }
+            public static int itemCount;
 
-            public Item(string name, int type, int atk, int def, int gold)
+            public Item(string name, int type, int atk, int def, int gold, bool isEquiped)
             {
                 Name = name;
                 Type = type;
                 Atk = atk;
                 Def = def;
                 Gold = gold;
+                this.isEquiped = isEquiped;
+            }
+
+            public void PrintHaveItemList(bool withNumber, int idx=0)
+            {
+                Console.Write("-");
+                if (withNumber)
+                {
+                    Console.Write("{0}", idx);
+                }
+                if (isEquiped)
+                {
+                    Console.Write("[");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write("E");
+                    Console.ResetColor();
+                    Console.Write("]");
+                }
+                Console.Write(Name);
+                Console.Write("  |  ");
+                Console.WriteLine("");
             }
         }
+
 
 
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
@@ -129,6 +153,8 @@
 
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
+            List<Item> haveItems = new List<Item>();//가지고 있는 아이템 리스트
+            
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
                 Console.WriteLine();
@@ -146,11 +172,11 @@
             }
             public void ItemTable() // 드랍 테이블 보관용 아이템 메서드
             {
-                items.Add(new Item("낡은 검", 0, 3, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
-                items.Add(new Item("보통 검", 0, 7, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
-                items.Add(new Item("낡은 갑옷", 1, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
-                items.Add(new Item("보통 갑옷", 1, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
-                items.Add(new Item("체력 포션", 2, 0, 0, 200));  // 소모품, 공격력 0, 방어력 0, 가격 200
+                items.Add(new Item("낡은 검", 0, 3, 0, 500,false));   // 무기, 공격력 3, 방어력 0, 가격 500
+                items.Add(new Item("보통 검", 0, 7, 0, 1000, false));  // 무기, 공격력 7, 방어력 0, 가격 1000
+                items.Add(new Item("낡은 갑옷", 1, 0, 7, 800, false));  // 방어구, 공격력 0, 방어력 7, 가격 800
+                items.Add(new Item("보통 갑옷", 1, 0, 15, 1300, false)); // 방어구, 공격력 0, 방어력 15, 가격 1300
+                items.Add(new Item("체력 포션", 2, 0, 0, 200, false));  // 소모품, 공격력 0, 방어력 0, 가격 200
             }
 
             public void PlayGame() // 게임 시작 메서드
@@ -182,8 +208,8 @@
                 while (true)
                 {
                     Console.Clear();
-                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작");
-                    switch (ChoiceInput(1, 2)) // 최초 선택지
+                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작\n3. 인벤토리");
+                    switch (ChoiceInput(1, 3)) // 최초 선택지
                     {
                         case 1:
                             Status();
@@ -191,9 +217,16 @@
                         case 2:
                             BattleStart();
                             break;
+                        case 3:
+                            Inventory();
+                            break;
                     }
                 }
             }
+
+           
+
+
             //---------------------레벨업
             public void LevelUp()
             {
@@ -245,6 +278,61 @@
                                   $"Enter. 나가기");
                 Console.ReadLine();
             }
+
+            public void Inventory()  // 인벤토리
+            {
+                haveItems.Add(items[0]);
+                Console.Clear();
+                Console.WriteLine("인벤토리 \n 아이템을 관리할 수 있습니다.");
+                if (haveItems.Count <= 0)
+                {
+                    Console.WriteLine("가진 아이템이 없습니다.");
+                }
+                else
+                {
+                    for (int i = 0; i <= Item.itemCount; i++)
+                    {
+                        haveItems[i].PrintHaveItemList(false, 0);
+                    }
+                }
+                Console.WriteLine("1. 장착관리\n0. 뒤로가기");
+                switch (ChoiceInput(0, 1))
+                {
+                    case 0:
+                        Console.ReadLine();
+                        break;
+                    case 1:
+                        Equip();
+                        break;
+                }
+            }
+            public void Equip() //장착관리
+            {
+                Console.Clear();
+                Console.WriteLine("장착관리 \n보유 중인 아이템을 관리할 수 있습니다.");
+                for(int i = 0; i <= Item.itemCount; i++)
+                {
+                    haveItems[i].PrintHaveItemList(true,i+1);
+                }
+                Console.WriteLine("Enter.돌아가기");
+                int keyInput = ChoiceInput(0,haveItems.Count);
+                switch(keyInput)
+                {
+                    case 0:
+                        Console.ReadLine();
+                        break;
+                    default: ItemEpuipToggle(keyInput-1);
+                        Equip();
+                        break;
+                }
+
+            }
+
+            private void ItemEpuipToggle(int idx)
+            {
+                haveItems[idx].isEquiped = !haveItems[idx].isEquiped;
+            }
+
             public void BattleStart() // 2. 전투 시작
             {
                 List<Monster> monsters = new List<Monster>(); // 몬스터 리스트 monsters 생성
