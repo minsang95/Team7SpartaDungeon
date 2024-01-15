@@ -359,7 +359,7 @@ namespace Team7SpartaDungeon
                 {
                     Console.Clear();
 
-                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3. 인벤토리\n5. 저장 / 불러오기\n");
+                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3. 인벤토리\n4. 상점\n5. 저장 / 불러오기\n");
                     switch (ChoiceInput(1, 5)) // 최초 선택지
                     {
                         case 1:
@@ -380,9 +380,6 @@ namespace Team7SpartaDungeon
                     }
                 }
             }
-
-
-
 
             //---------------------레벨업
             public void LevelUp()
@@ -443,7 +440,6 @@ namespace Team7SpartaDungeon
                                   $"Enter. 나가기");
                 Console.ReadLine();
             }
-
             public void StoreMenu()   //상점페이지
             {
                 Console.Clear();
@@ -1214,9 +1210,9 @@ namespace Team7SpartaDungeon
                     //---------------- 음악가 스킬 -----------------------------------------------------------------------------------------------------------------------------------------------
                     if (player is Musician && use == 1 && player.AvailableSkill[use - 1]) // 음악가 1번 스킬 - 타임 코스모스, 그냥 냅다 게임 시작 페이지로 돌아갑니다.
                     {
-                        if (70 == player.Mp)
+                        if (70 >= player.Mp)
                         {
-                            player.Mp -= 70;
+                            player.Mp -= 50;
 
                             Console.WriteLine("\n\nEnter를 누르면 시간을 되돌립니다.");
                             Console.ReadLine();
