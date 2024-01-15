@@ -187,9 +187,8 @@ namespace Team7SpartaDungeon
                     Console.ForegroundColor = ConsoleColor.DarkMagenta;
                     Console.Write("{0}", idx);
                     Console.ResetColor();
+                }
 
-                Console.Write("-");
-                
                 if (IsEquiped)
                 {
                     Console.Write("[");
@@ -200,7 +199,6 @@ namespace Team7SpartaDungeon
                 }
                 Console.Write(Name);
                 Console.Write("  |  ");
-
                 Console.Write($"ATk: {Atk}");
                 Console.Write("  |  ");
                 Console.Write($"Def: {Def}");
@@ -208,16 +206,17 @@ namespace Team7SpartaDungeon
                 Console.Write($"Gold: {Gold}");
                 Console.Write("  |  ");
                 Console.WriteLine($"{Quantity}개");
+            }
 
 
-
+              
             }
 
 
 
-            }
+           
 
-        }
+        
 
 
 
