@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 ﻿using System.Security.Cryptography;
 
 namespace Team7SpartaDungeon
@@ -488,14 +489,22 @@ namespace Team7SpartaDungeon
                     Console.ResetColor();
                     for (int i = 0; i < monsters.Count; i++)
                     {
-                        if (!(monsterHp[i] <= 0))
-                            Console.WriteLine($"   Lv.{monsters[i].Level} {monsters[i].Name} HP {monsterHp[i]}/{monsters[i].Hp}");
-                        else
+                        if (monsterHp[i] <= 0)
                         {
                             Console.ForegroundColor = ConsoleColor.DarkGray;
                             Console.WriteLine($"   Lv.{monsters[i].Level} {monsters[i].Name} Dead");
                             Console.ResetColor();
                         }
+                        else if (0 < monsterHp[i] && 0 < monsterBurn[i])
+                        {
+                            Console.Write($"   Lv.{monsters[i].Level} {monsters[i].Name} HP {monsterHp[i]}/{monsters[i].Hp}");
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine(" ♨");
+                            Console.ResetColor();
+                        }
+                        else if (0 < monsterHp[i])
+                            Console.WriteLine($"   Lv.{monsters[i].Level} {monsters[i].Name} HP {monsterHp[i]}/{monsters[i].Hp}");
+
                     }
                     Console.WriteLine($"\n\n   [내정보]\n\n   Lv.{player.Level} {player.Name} ({player.Class})\n   HP {player.Hp}/{player.MaxHp}\n   MP {player.Mp}/{player.MaxMp}");
                 }
@@ -747,7 +756,7 @@ namespace Team7SpartaDungeon
                         if (20 <= player.Mp)
                         {
                             player.Mp -= 20;
-                            for (int i = 0; i < monsters.Count; i++)
+                            for (int i = monsters.Count-1; 0 <= i; i--)
                             {
                                 int bh = monsterHp[i];
                                 if (0 < monsterHp[i])
@@ -756,7 +765,9 @@ namespace Team7SpartaDungeon
                                     monsterBurn[i] = 4;
                                     BattleField();
                                     Console.SetCursorPosition(0, 3 + i);
-                                    Console.WriteLine($"◎");
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"◎▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒·");
+                                    Console.ResetColor();
                                     Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 파이어 브레스!\n");
                                     Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[i]}]");
@@ -877,7 +888,7 @@ namespace Team7SpartaDungeon
                             monsterBurn[i]--;
                             BattleField();
                             Console.SetCursorPosition(0, 3 + i);
-                            Console.WriteLine($"♨");
+                            Console.WriteLine($"▷");
                             Console.SetCursorPosition(0, 11 + monsters.Count);
                             Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name} 이(가) 화상으로 데미지를 받았다. [데미지 : {bh - monsterHp[i]}]");
                             if (monsterHp[i] <= 0)
