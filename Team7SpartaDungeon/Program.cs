@@ -15,6 +15,7 @@ namespace Team7SpartaDungeon
             public float Atk { get; set; }
             public int Def { get; set; }
             public int SkillAtk { get; set; }
+            public int Dex {  get; set; }
             public int MaxHp { get; set; }
             public int Hp { get; set; }
             public int MaxMp { get; set; }
@@ -40,6 +41,7 @@ namespace Team7SpartaDungeon
                 Atk = 10;
                 Def = 5;
                 SkillAtk = 0;
+                Dex = 5;
                 MaxHp = 100;
                 Hp = 100;
                 MaxMp = 50;
@@ -64,6 +66,7 @@ namespace Team7SpartaDungeon
                 Atk = 5;
                 Def = 0;
                 SkillAtk = 10;
+                Dex = 5;
                 MaxHp = 80;
                 Hp = 80;
                 MaxMp = 100;
@@ -85,16 +88,18 @@ namespace Team7SpartaDungeon
             public int Level { set; get; }
             public int Atk { get; set; }
             public int Def { get; set; }
+            public int Dex { get; set; }
             public int Hp { get; set; }
             public int DropExp { get; }
             public int Gold { get; set; }
-            public Monster(string name, int level, int atk, int def, int hp, int dropExp, int gold)
+            public Monster(string name, int level, int atk, int def,int dex, int hp, int dropExp, int gold)
 
             {
                 Name = name;
                 Level = level;
                 Atk = atk;
                 Def = def;
+                Dex = dex;
                 Hp = hp;
                 DropExp = dropExp;
                 Gold = gold;
@@ -165,10 +170,10 @@ namespace Team7SpartaDungeon
 
             // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
-            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 300);
-            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80, 800);
-            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50, 500);
-            Monster Hansole = new Monster("이한솔매니저님", 5, 20, 0, 30, 100, 1000);
+            Monster minion = new Monster("미니언", 2, 10, 0, 10, 15, 20, 300);
+            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 10, 25, 80, 800);
+            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 10, 50, 500);
+            Monster Hansole = new Monster("이한솔매니저님", 5, 20, 0, 10, 30, 100, 1000);
 
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
@@ -346,7 +351,7 @@ namespace Team7SpartaDungeon
                 Console.Clear();
                 Console.WriteLine($"캐릭터의 정보가 표시됩니다.\n\n" +
                                   $" 이름   : {player.Name}\n" +
-                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n 마법력 : {player.SkillAtk}\n" +
+                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n 마법력 : {player.SkillAtk}\n 민첩성 : {player.Dex}\n" +
                                   $" 체 력  : {player.Hp}/{player.MaxHp}\n 마 나  : {player.Mp}/{player.MaxMp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.MaxExp}\n\n" +
                                   $"Enter. 나가기");
                 Console.ReadLine();
@@ -928,19 +933,40 @@ namespace Team7SpartaDungeon
                 {
                     for (int i = 0; i < monsters.Count; i++)
                     {
+                        BattleField();
                         int befHp = player.Hp;
                         int damage = monsters[i].Atk - player.Def;    // 몬스터 데미지
-                        if (damage < 0) damage = 0;
+                        if (damage < 1) damage = 1;
                         if (0 < monsterHp[i])
                         {
-
-                            player.Hp -= damage;
-                            BattleField();
                             Console.SetCursorPosition(0, 3 + i);
                             Console.WriteLine($"▶");
                             Console.SetCursorPosition(0, 11 + monsters.Count);
-                            Console.WriteLine("\n");
-                            Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 의 공격!\n{player.Name} 을(를) 맞췄습니다. [데미지 : {befHp - player.Hp}]\n");
+                            Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 의 공격!\n");
+                            Console.WriteLine("1. 방어하기\n2. 피하기");
+                            switch (ChoiceInput(1, 2))
+                            {
+                                case 1:
+                                    player.Hp -= damage;
+                                    BattleField();
+                                    Console.WriteLine($"\n{player.Name} 을(를) 맞췄습니다. [데미지 : {befHp - player.Hp}]\n");
+                                    break;
+                                case 2:
+                                    int Dodge = r.Next(0, player.Dex + monsters[i].Dex);
+                                    if (Dodge < player.Dex)
+                                    {
+                                        BattleField();
+                                        Console.WriteLine($"\n{player.Name} 이(가) 공격을 피했습니다!");
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        player.Hp -= monsters[i].Atk;
+                                        BattleField();
+                                        Console.WriteLine($"\n{player.Name} 을(를) 맞췄습니다. [데미지 : {befHp - player.Hp}]\n");
+                                        break;
+                                    }
+                            }
                             if (player.Hp <= 0)
                             {
                                 Console.WriteLine($"Lv.{player.Level} {player.Name}\nHP {befHp} -> Dead\n\nEnter. 다음");
