@@ -136,8 +136,13 @@ namespace Team7SpartaDungeon
                 IsEquiped = isEquiped;
                 IsPurchased = false;
             }
-
-            public void ShopList(bool withNumber, int idx = 0, bool showPrice = true)  // 상점 쇼핑할때
+            public void HighlightPurchased(string s)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write(s);
+                Console.ResetColor();
+            }
+            public void ShopList(bool withNumber, int idx = 0)  // 상점 쇼핑할때
             {
                 Console.Write("-");
 
@@ -160,18 +165,16 @@ namespace Team7SpartaDungeon
 
                 if (Atk != 0) Console.Write($"Atk {(Atk >= 0 ? " + " : "")}{Atk}");
                 if (Def != 0) Console.Write($"Def {(Def >= 0 ? " + " : "")}{Def}");
-                if (showPrice)
+                Console.Write("  |  ");
+                if (IsPurchased)
                 {
-                    string priceOrStatus = IsPurchased ? "구매완료" : Gold.ToString() + " G";
-                    Console.Write(" | ");
-                    if (IsPurchased)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(priceOrStatus);
-                        Console.ResetColor();
-                    }
+                    HighlightPurchased("구매완료");
                 }
-                Console.WriteLine();
+                if (!IsPurchased)
+                {
+                    Console.WriteLine(Gold + "G");
+                }
+                Console.WriteLine("");
 
 
             }
@@ -196,7 +199,11 @@ namespace Team7SpartaDungeon
                 }
                 Console.Write(Name);
                 Console.Write("  |  ");
-                Console.WriteLine(Gold);
+                Console.Write($"ATk: {Atk}");
+                Console.Write("  |  ");
+                Console.Write($"Def: {Def}");
+                Console.Write("  |  ");
+                Console.WriteLine(Quantity + "개");
             }
 
             public void SellItemList(bool withNumber, int idx)
@@ -209,12 +216,9 @@ namespace Team7SpartaDungeon
                 Console.Write("  |  ");
                 Console.Write((int)Gold * 0.85f+"G");
                 Console.Write("  |  ");
-                Console.WriteLine(Quantity+"개");
                 Console.Write($"ATk: {Atk}");
                 Console.Write("  |  ");
                 Console.Write($"Def: {Def}");
-                Console.Write("  |  ");
-                Console.Write($"Gold: {Gold}");
                 Console.Write("  |  ");
                 Console.WriteLine($"{Quantity}개");
             }
@@ -444,7 +448,7 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("[아이템 목록]");
                 for (int i = 0; i < 4; i++)
                 {
-                    shopItem[i].ShopList(false, 0, true);
+                    shopItem[i].ShopList(false, 0);
                 }
                 Console.WriteLine("");
                 Console.WriteLine("0. 나가기");
@@ -549,7 +553,7 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("");
                 for (int i = 0; i < 4; i++)
                 {
-                    shopItem[i].ShopList(true, i + 1, true);
+                    shopItem[i].ShopList(true, i + 1);
                 }
                 Console.WriteLine("\n구매하고 싶은 아이템 번호를 입력 해주세요.");
                 Console.WriteLine("0을 입력하면 상점으로 돌아갑니다.");
