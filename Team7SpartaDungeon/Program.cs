@@ -766,7 +766,7 @@ namespace Team7SpartaDungeon
                                     BattleField();
                                     Console.SetCursorPosition(0, 3 + i);
                                     Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine($"◎▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒·");
+                                    Console.WriteLine($"◎▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒·");
                                     Console.ResetColor();
                                     Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 파이어 브레스!\n");
