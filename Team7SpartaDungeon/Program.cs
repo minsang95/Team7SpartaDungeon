@@ -174,7 +174,7 @@ namespace Team7SpartaDungeon
                 }
                 Console.Write(Name);
                 Console.Write("  |  ");
-                Console.Write((int)Gold * 0.85f);
+                Console.Write((int)Gold * 0.85f+"G");
                 Console.Write("  |  ");
                 Console.WriteLine(Quantity+"개");
             }
