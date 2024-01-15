@@ -816,6 +816,18 @@ namespace Team7SpartaDungeon
                                 if (monsterHp[atk] < 0)
                                     monsterHp[atk - next] += monsterHp[atk];
                                 BattleField();
+                                Console.SetCursorPosition(0, 3 + atk);
+                                if (monsterHp[atk] < 0) Console.SetCursorPosition(0, 3 + atk - next);
+                                Console.ForegroundColor = ConsoleColor.Blue;
+                                Console.Write($"◎");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▲");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("§");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("§");
+                                Console.ResetColor();
+                                Console.SetCursorPosition(0, 11 + monsters.Count);
                                 Console.WriteLine($"\n\n{player.Name} 의 아이스 스피어!\n");
                                 if (monsterHp[atk] < 0)
                                     Console.WriteLine($"Lv.{monsters[atk - next].Level} {monsters[atk - next].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk - next]}]");
@@ -839,6 +851,18 @@ namespace Team7SpartaDungeon
                                 int bh = monsterHp[atk];
                                 monsterHp[atk] -= player.SkillAtk + 10;
                                 BattleField();
+                                Console.SetCursorPosition(0, 3 + atk);
+                                Console.ForegroundColor = ConsoleColor.Blue;
+                                Console.Write($"◎");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▲");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("§");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("§");
+                                Console.ResetColor();
+                                Console.SetCursorPosition(0, 11 + monsters.Count);
+                                Console.WriteLine($"\n\n{player.Name} 의 아이스 스피어!\n");
                                 Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
                                 if (monsterHp[atk] <= 0)
                                     Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {bh} -> Dead");
