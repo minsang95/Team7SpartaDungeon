@@ -120,14 +120,11 @@ namespace Team7SpartaDungeon
             public int Gold { get; set; }
             public int Quantity { get; set; } // 아이템 수량
             public bool IsEquiped { get; set; }
-
             public bool IsPurchased { get; set; }
-
             public static int shopItemCount;        //상점 쇼핑 카운트 증가 해야 예외처리가 가능해서 추가
             public static int itemCount;
             public static int dropItemCount;
             public Item(string name, int type, int atk, int skillAtk, int def, int gold, int quantity = 1, bool isEquiped = false)
-
             {
                 Name = name;
                 Type = type;
@@ -137,7 +134,6 @@ namespace Team7SpartaDungeon
                 Gold = gold;
                 Quantity = quantity;
                 IsEquiped = isEquiped;
-
                 IsPurchased = false;
             }
 
@@ -171,18 +167,14 @@ namespace Team7SpartaDungeon
                     if (IsPurchased)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-
+                        Console.WriteLine(priceOrStatus);
+                        Console.ResetColor();
                     }
-                    Console.WriteLine(priceOrStatus);
-                    Console.ResetColor();
-
-
                 }
                 Console.WriteLine();
 
 
             }
-
             public void PlayerInventoryList(bool withNumber, int idx = 0)
             {
 
@@ -204,6 +196,20 @@ namespace Team7SpartaDungeon
                 }
                 Console.Write(Name);
                 Console.Write("  |  ");
+                Console.WriteLine(Gold);
+            }
+
+            public void SellItemList(bool withNumber, int idx)
+            {
+                if (withNumber)
+                {
+                    Console.Write("{0}", idx);
+                }
+                Console.Write(Name);
+                Console.Write("  |  ");
+                Console.Write((int)Gold * 0.85f+"G");
+                Console.Write("  |  ");
+                Console.WriteLine(Quantity+"개");
                 Console.Write($"ATk: {Atk}");
                 Console.Write("  |  ");
                 Console.Write($"Def: {Def}");
@@ -218,20 +224,13 @@ namespace Team7SpartaDungeon
             }
 
 
-
-           
-
-        
-
-
-
-
-
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
+
             Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
             SpartaDungeon sd = new SpartaDungeon();
+            
             sd.PlayGame();
         }
         //----------------------------------------------------------------------------------------------------------------------------------
@@ -248,12 +247,17 @@ namespace Team7SpartaDungeon
             Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 10, 50, 500);
             Monster Hansole = new Monster("이한솔매니저님", 5, 20, 0, 10, 30, 100, 1000);
 
+            Item goodSword = (new Item("좋은 검", 0, 10, 2, 0, 1500));
+            Item mediWand = (new Item("명상의 완드", 0, 2, 10, 0, 2000));
+            Item robes = (new Item("현자의 로브", 1, 0, 5, 3, 1200));
+
+
+
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
             List<Item> haveItem = new List<Item>();
             List<Item> dropItem = new List<Item>();
-
-            List<Item> shopItem = new List<Item>();  //상점 아이템 
+            List<Item> shopItem = new List<Item>();
 
 
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
@@ -291,9 +295,13 @@ namespace Team7SpartaDungeon
 
             }
 
+           
+
             public void PlayGame() // 게임 시작 메서드
             {
-
+                //shopItem.Add(goodSword);      //상점아이템 추가
+                //shopItem.Add(mediWand);
+                //shopItem.Add(robes);
 
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
@@ -412,12 +420,8 @@ namespace Team7SpartaDungeon
 
                 }
             }
-         
             public void Status() // 1. 상태 보기
             {
-                //float bonusAtk = getBonusAtk();
-                //int bonusDef = getBonusDef();
-                //int bonusSkillAtk = getBonusSkillAtk();
                 Console.Clear();
                 Console.WriteLine($"캐릭터의 정보가 표시됩니다.\n\n" +
                                   $" 이름   : {player.Name}\n" +
@@ -445,12 +449,16 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("");
                 Console.WriteLine("0. 나가기");
                 Console.WriteLine("1. 아이템 구매");
-                switch (ChoiceInput(0, 1))
+                Console.WriteLine("2. 아이템 판매");
+                switch (ChoiceInput(0, 2))
                 {
                     case 0:
                         break;
                     case 1:
                         Shop();
+                        break;
+                    case 2:
+                        SellMenu();
                         break;
                 }
             }
@@ -501,8 +509,6 @@ namespace Team7SpartaDungeon
                 {
                     Console.WriteLine("가진 아이템이 없습니다.");
                 }
-
-
                 else
                 {
                     for (int i = 0; i < Item.itemCount; i++)
@@ -520,6 +526,7 @@ namespace Team7SpartaDungeon
                 switch (keyInput)
                 {
                     case 0:
+                        InventoryMenu();
                         break;
                     default:
                         ItemEpuipToggle(keyInput - 1);
@@ -584,12 +591,8 @@ namespace Team7SpartaDungeon
             }
 
 
+            private void ItemEpuipToggle(int idx) //아이템 장착과 스탯 증감
 
-
-            
-
-
-            private void ItemEpuipToggle(int idx)
             {
                 haveItem[idx].IsEquiped = !haveItem[idx].IsEquiped;
 
@@ -608,6 +611,81 @@ namespace Team7SpartaDungeon
                 }
 
             }
+
+            private void SellMenu()
+            {
+                
+                Console.Clear();
+                Console.WriteLine("상점 - 판매");
+                Console.WriteLine("어떤 아이템을 판매하시겠습니까?");
+                Console.WriteLine("");
+                Console.WriteLine("보유 골드");
+                Console.WriteLine(player.Gold + "G");
+                Console.WriteLine("");
+                Console.WriteLine("[판매가능 아이템 목록]");
+                if (haveItem.Count > 0)
+                {
+                    for (int i = 0; i < haveItem.Count; i++)
+                    {
+                        haveItem[i].SellItemList(true, i + 1);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("가진 아이템이 없습니다.");
+                }
+                Console.WriteLine("");
+                Console.WriteLine("0. 돌아가기");
+                int keyInput = ChoiceInput(0, haveItem.Count);
+                switch(keyInput)
+                {
+                    case 0:
+                        Shop();
+                        break;
+                    default:
+                        ItemSell(keyInput - 1);
+                        SellMenu();
+                        break;
+                }
+
+            }
+            private void ItemSell(int Idx)
+            {
+                if (haveItem[Idx].Quantity > 1)
+                {
+                    Console.WriteLine("몇 개를 판매하시겠습니까?");
+                    Console.WriteLine("0. 취소");
+                    int keyInput = ChoiceInput(0, haveItem[Idx].Quantity);
+                    switch (keyInput)
+                    {
+                        case 0:
+                            SellMenu();
+                            break;
+                        default:
+                            {
+                                haveItem[Idx].IsPurchased = false;
+                                player.Gold += (int)(haveItem[Idx].Gold * 0.85f)*keyInput;
+                                haveItem[Idx].Quantity -= keyInput;
+                                if (haveItem[Idx].Quantity<=0)
+                                {
+                                    haveItem.Remove(haveItem[Idx]);
+                                    Item.itemCount--;
+                                }
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    haveItem[Idx].IsPurchased = false;
+                    player.Gold += (int)(haveItem[Idx].Gold * 0.85f);
+                    haveItem.Remove(haveItem[Idx]);
+                    Item.itemCount--;
+                }
+
+            }
+    
+
 
             public void BattleStart() // 2. 전투 시작
             {
