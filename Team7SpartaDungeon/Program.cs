@@ -74,7 +74,7 @@ namespace Team7SpartaDungeon
                 MpPotion = 1;
                 AvailableSkill = new List<bool>();
                 Skill = new List<string>();
-                BurningDmg = 5;
+                BurningDmg = 6;
             }
         }
 
@@ -224,13 +224,15 @@ namespace Team7SpartaDungeon
                         player.Skill.Add("알파 스트라이크 - MP 10\n   공격력 * 2 로 하나의 적을 공격합니다."); // 전사 1번 스킬 추가
                         player.AvailableSkill.Add(true);
                         player.Skill.Add("더블 스트라이크 - MP 15\n   공격력 * 1.5 로 2명의 적을 랜덤으로 공격합니다."); // 전사 2번 스킬 추가
-                        player.AvailableSkill.Add(true);
+                        player.AvailableSkill.Add(false);
                         break;
                     case 2:
                         player = new Wizard();
-                        player.Skill.Add("파이어 브레스 - MP 20\n   마법력 * 0.5 로 모든 적을 공격하고, 화상 상태로 만듭니다.(화상 데미지 5 x 4)"); // 마법사 1번 스킬 추가
+                        player.Skill.Add("파이어 브레스 - MP 20\n   마법력 * 0.4 로 모든 적을 공격하고, 화상 상태로 만듭니다.(화상 데미지 6 x 4)"); // 마법사 1번 스킬 추가
                         player.AvailableSkill.Add(true);
                         player.Skill.Add("아이스 스피어 - MP 10\n   마법력 + 10 으로 가장 앞에있는 적을 공격한다. 만약 적이 사망할 경우, 초과한 데미지만큼 다음 적이 데미지를 받는다."); // 마법사 2번스킬 추가
+                        player.AvailableSkill.Add(false);
+                        player.Skill.Add("메디테이션 - MP +10\n   일시적으로 마법력 * 0.5 의 방어력을 얻고 명상에 빠진다.");
                         player.AvailableSkill.Add(true);
                         break;
                 }
@@ -295,6 +297,13 @@ namespace Team7SpartaDungeon
                     }
                     player.Hp = player.MaxHp; //레벨업 시 회복
                     player.Mp = player.MaxMp;
+
+                    if (3 == player.Level)
+                    {
+                        player.AvailableSkill[1] = true;
+                        if (player is Warrior) Console.WriteLine("\n\n스킬 \"더블 스트라이크\"를 사용할 수 있습니다.");
+                        if (player is Wizard) Console.WriteLine("\n\n스킬 \"아이스 스피어\"를 사용할 수 있습니다");
+                    }
 
                     Console.ReadKey();
 
@@ -743,7 +752,7 @@ namespace Team7SpartaDungeon
                                 int bh = monsterHp[i];
                                 if (0 < monsterHp[i])
                                 {
-                                    monsterHp[i] -= (int)Math.Ceiling(player.SkillAtk * 0.5f);
+                                    monsterHp[i] -= (int)Math.Ceiling(player.SkillAtk * 0.4f);
                                     monsterBurn[i] = 4;
                                     BattleField();
                                     Console.SetCursorPosition(0, 3 + i);
@@ -834,6 +843,23 @@ namespace Team7SpartaDungeon
                         }
                     }
                     else if (player is Wizard && use == 2)
+                    {
+                        Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
+                        Console.ReadLine();
+                    }
+                    if (player is Wizard && use == 3 && player.AvailableSkill[use - 1]) // 마법사 3번 스킬 // 메디테이션 - MP +10, 일시적으로 마법력 * 0.5 의 방어력을 얻고 명상에 빠진다.
+                    {
+                        int bd = player.Def;
+                        player.Def += (int)Math.Ceiling(player.SkillAtk * 0.5);
+                        BattleField();
+                        Console.WriteLine($"\n{player.Name}의 방어력이 {player.Def - bd} 증가하였습니다. [방어력 : {player.Def}]\n\nEnter. 다음");
+                        Console.ReadLine();
+                        EnemyFrontPhase();
+                        player.Def = bd;
+                        player.Mp += 10;
+                        if(player.MaxMp < player.Mp) player.Mp = player.MaxMp;
+                    }
+                    else if (player is Wizard && use == 3)
                     {
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
