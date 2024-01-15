@@ -1,7 +1,8 @@
-
-﻿using System;
 using System.Net;
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
+using Newtonsoft.Json;
+using System.IO;
+using static Team7SpartaDungeon.Program;
 
 
 namespace Team7SpartaDungeon
@@ -86,9 +87,33 @@ namespace Team7SpartaDungeon
             }
         }
 
+        public class Musician : Player
+        {
+            public Musician()
+            {
+                Name = "이름";
+                Class = "음악가";
+                Level = 1;
+                Atk = 6;
+                Def = 3;
+                SkillAtk = 6;
+                MaxHp = 70;
+                Hp = 70;
+                MaxMp = 70;
+                Mp = 70;
+                Gold = 1500;
+                Exp = 0;
+                MaxExp = 30;
+                HpPotion = 3;
+                MpPotion = 1;
+                AvailableSkill = new List<bool>();
+                Skill = new List<string>();
+            }
+        }
+
         struct Monster
         {
-            public string Name { get; }
+            public string Name { get; set; }
             public int Level { set; get; }
             public int Atk { get; set; }
             public int Def { get; set; }
@@ -205,7 +230,6 @@ namespace Team7SpartaDungeon
                 Console.Write("  |  ");
                 Console.WriteLine(Quantity + "개");
             }
-
             public void SellItemList(bool withNumber, int idx)
             {
                 if (withNumber)
@@ -226,24 +250,16 @@ namespace Team7SpartaDungeon
 
               
             }
-
-
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
-
             Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
             SpartaDungeon sd = new SpartaDungeon();
-            
             sd.PlayGame();
         }
-        //----------------------------------------------------------------------------------------------------------------------------------
         public class SpartaDungeon
         {
             static int dungeonFloor = 0;       // 던전 층수
-
-
-
             // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
             Monster minion = new Monster("미니언", 2, 10, 0, 10, 15, 20, 300);
@@ -290,23 +306,18 @@ namespace Team7SpartaDungeon
             }
 
             public void ItemTable() // 아이템 리스트 보관용 메서드
+             // 아이템 리스트 보관용
             {
                 items.Add(new Item("낡은 검", 0, 3, 0, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
                 items.Add(new Item("보통 검", 0, 7, 0, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
                 items.Add(new Item("낡은 갑옷", 1, 0, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
                 items.Add(new Item("보통 갑옷", 1, 0, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
                 items.Add(new Item("잡동사니", 2, 0, 0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
-
             }
-
-           
 
             public void PlayGame() // 게임 시작 메서드
             {
-                //shopItem.Add(goodSword);      //상점아이템 추가
-                //shopItem.Add(mediWand);
-                //shopItem.Add(robes);
-
+                ItemTable();
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
@@ -317,15 +328,11 @@ namespace Team7SpartaDungeon
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
 
-
-                ItemTable(); // 아이템 리스트 보관용 메서드 초기화
-
                 ShopItemTable();
 
-
-
-                Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사");
-                switch (ChoiceInput(1, 2)) // 직업 선택
+                Console.Clear();
+                Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사\n3. 음악가\n");
+                switch (ChoiceInput(1, 3)) // 직업 선택
                 {
                     case 1:
                         player = new Warrior();
@@ -345,15 +352,20 @@ namespace Team7SpartaDungeon
 
                         player.AvailableSkill.Add(true);
                         break;
+                    case 3:
+                        player = new Musician();
+                        player.Skill.Add("타임 코스모스 \"깐따삐아\" ! - MP 70\n  모든 마나를 소모하고 시간을 게임 시작 전으로 되돌립니다.");
+                        player.AvailableSkill.Add(true);
+                        break;
                 }
                 Console.WriteLine("원하시는 이름을 설정해주세요.");
                 player.Name = Console.ReadLine();    // 플레이어 이름 입력
                 while (true)
                 {
                     Console.Clear();
-                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3.인벤토리\n4.상 점");
-                    switch (ChoiceInput(1, 4)) // 최초 선택지
 
+                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3. 인벤토리\n5. 저장 / 불러오기\n");
+                    switch (ChoiceInput(1, 5)) // 최초 선택지
                     {
                         case 1:
                             Status();
@@ -362,12 +374,14 @@ namespace Team7SpartaDungeon
                             BattleStart();
                             break;
                         case 3:
-                            InventoryMenu(); // 아이템 획득 테스트 때문에 임시로 추가
+                            InventoryMenu();
                             break;
                         case 4:
                             StoreMenu();
                             break;
-
+                        case 5:
+                            SaveGameMenu(); // 저장 및 불러오기 메뉴
+                            break;
                     }
                 }
             }
@@ -467,7 +481,6 @@ namespace Team7SpartaDungeon
                 }
             }
 
-
             public void InventoryMenu()  // 인벤토리
             {
                 Console.Clear();
@@ -478,12 +491,10 @@ namespace Team7SpartaDungeon
 
                     Console.WriteLine(" --현재 보유한 아이템이 없습니다--");
 
-                  
-
                 }
                 else
                 {
-                    for (int i = 0; i < Item.itemCount; i++)
+                    for (int i = 0; i < haveItem.Count; i++)
                     {
                         haveItem[i].PlayerInventoryList(false, 0);
                     }
@@ -521,10 +532,8 @@ namespace Team7SpartaDungeon
                     }
       
                 }
-
                 Console.WriteLine("");
                 Console.WriteLine("장착하고 싶은 아이템 숫자를 선택하세요");
-
                 Console.WriteLine("\n0.돌아가기");
                 int keyInput = ChoiceInput(0, haveItem.Count);
                 switch (keyInput)
@@ -596,7 +605,6 @@ namespace Team7SpartaDungeon
 
 
             private void ItemEpuipToggle(int idx) //아이템 장착과 스탯 증감
-
             {
                 haveItem[idx].IsEquiped = !haveItem[idx].IsEquiped;
 
@@ -1162,7 +1170,6 @@ namespace Team7SpartaDungeon
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
-
                     if (player is Wizard && use == 3 && player.AvailableSkill[use - 1]) // 마법사 3번 스킬 // 메디테이션 - MP +10, 일시적으로 마법력 * 0.5 의 방어력을 얻고 명상에 빠진다.
                     {
                         int bd = player.Def;
@@ -1176,13 +1183,32 @@ namespace Team7SpartaDungeon
                         if(player.MaxMp < player.Mp) player.Mp = player.MaxMp;
                     }
                     else if (player is Wizard && use == 3)
+                    //---------------- 음악가 스킬 -----------------------------------------------------------------------------------------------------------------------------------------------
+                    if (player is Musician && use == 1 && player.AvailableSkill[use - 1]) // 음악가 1번 스킬 - 타임 코스모스, 그냥 냅다 게임 시작 페이지로 돌아갑니다.
+                    {
+                        if (70 == player.Mp)
+                        {
+                            player.Mp -= 70;
+
+                            Console.WriteLine("\n\nEnter를 누르면 시간을 되돌립니다.");
+                            Console.ReadLine();
+                            PlayGame(); // 다시 게임 시작 초기화
+
+                            if (CheckMonsters() != 0) EnemyFrontPhase();
+                        }
+                        else
+                        {
+                            Console.WriteLine("MP 가 부족합니다.\n\nEnter. 다음");
+                            Console.ReadLine();
+                        }
+                    }
+                    else if (player is Musician && use == 1)
                     {
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
 
                 }
-
                 void EnemyFrontPhase()
                 {
                     for (int i = 0; i < monsters.Count; i++)
@@ -1317,7 +1343,6 @@ namespace Team7SpartaDungeon
                     {
                         dungeon.Add(Hansole);
                     }
-
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
 
@@ -1346,33 +1371,40 @@ namespace Team7SpartaDungeon
                 }
                 void GetRewards() // 던전 보상 메서드
                 {
-                    Console.Clear();
-                    Random r = new Random(); // 랜덤 객체 생성, 랜덤 숫자를 생성하려고
-                    int totalGold = 0; //획득 골드 표시하려고, 일단 초기화
 
-                    for (int i = 0; i < monsters.Count; i++) // 몬스터 리스트 수 만큼 반복
+                    Console.Clear();
+                    Random r = new Random();
+                    int totalGold = 0;
+
+                    dropItem.Clear();
+
+                    for (int i = 0; i < monsters.Count; i++)
                     {
-                        totalGold += monsters[i].Gold;  // 몬스터의 골드를 획득 골드에 추가
-                        if (items.Count > 0) // 아이템 리스트에 아이템이 있는지 확인
+                        totalGold += monsters[i].Gold;
+                        if (items.Count > 0)
                         {
                             int itemIdx = r.Next(items.Count); // 아이템 리스트 내에서 랜덤한 인덱스 선택
-                            dropItem.Add(items[itemIdx]);
-                            Item.dropItemCount += itemIdx;
+                            Item newItem = items[itemIdx];
 
-                            //
-                            var existingItem = haveItem.FirstOrDefault(it => it.Name == dropItem[i].Name);
-                            if (existingItem != null)
+                            var existingDropItem = dropItem.FirstOrDefault(item => item.Name == newItem.Name);
+                            if (existingDropItem != null)
                             {
-                                existingItem.Quantity++; // 이미 있는 아이템이면 수량 증가
+                                existingDropItem.Quantity++; // dropItem 리스트에 이미 존재하는 경우 수량 증가
                             }
                             else
                             {
+                                dropItem.Add(new Item(newItem.Name, newItem.Type, newItem.Atk, newItem.SkillAtk, newItem.Def, newItem.Gold, 1, false)); // 새 아이템 추가
+                            }
 
-                                haveItem.Add(dropItem[i]); // 새 아이템 추가
+                            var existingHaveItem = haveItem.FirstOrDefault(item => item.Name == newItem.Name);
+                            if (existingHaveItem != null)
+                            {
+                                existingHaveItem.Quantity++; // haveItem 리스트에 이미 존재하는 경우 수량 증가
+                            }
+                            else
+                            {
+                                haveItem.Add(new Item(newItem.Name, newItem.Type, newItem.Atk, newItem.SkillAtk, newItem.Def, newItem.Gold, 1, false)); // 새 아이템 추가
                                 Item.itemCount++;
-
-
-
                             }
                         }
                     }
@@ -1384,15 +1416,17 @@ namespace Team7SpartaDungeon
                     Console.ResetColor();
                     player.Gold += totalGold;
                     Console.Write(" Gold\n");
-                    foreach (var item in haveItem) // 아이템의 이름과 수량을 순회
+
+                    foreach (var item in dropItem) // 
                     {
                         Console.WriteLine("");
                         Console.Write($"{item.Name} - "); // 아이템 이름
                         Console.ForegroundColor = ConsoleColor.Magenta;
-                        Console.Write(item.Quantity); // 아이템 수량
+                        Console.Write(item.Quantity); // dropItem 수
                         Console.ResetColor();
                         Console.Write(" 개\n");
                     }
+
                 }
                 void HpRecovery()
                 {
@@ -1531,7 +1565,73 @@ namespace Team7SpartaDungeon
                     }
                 }
             }
+            void SaveGameMenu()
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("[ 게임 저장 / 불러오기 ]\n");
+                Console.ResetColor();
+                Console.WriteLine("게임을 저장하거나 불러올 수 있습니다.\n");
+                Console.WriteLine("1. 게임 저장하기");
+                Console.WriteLine("2. 게임 불러오기");
+                Console.WriteLine("0. 돌아가기\n");
 
+                switch (ChoiceInput(0, 2))
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        SaveGame("gameData.json");
+                        Console.WriteLine("게임이 저장되었습니다! 아무 키나 누르면 돌아갑니다.");
+                        Console.ReadKey();
+                        break;
+                    case 2:
+                        LoadGame("gameData.json");
+                        Console.WriteLine("게임을 불러왔습니다! 아무 키나 누르면 돌아갑니다.");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+            void SaveGame(string filePath) // 게임 저장
+            {
+                var gameData = new // 저장용 객체
+                {
+                    Player = player,
+                    HaveItem = haveItem.ToList(), // 내가 가지고 있는 아이템 리스트화
+                    DungeonFloor = dungeonFloor,
+                    Dungeon = dungeon
+                };
+                string json = JsonConvert.SerializeObject(gameData, Formatting.Indented);
+                File.WriteAllText(filePath, json);
+            }
+            public void LoadGame(string filePath) // 게임 불러오기
+            {
+                string json = File.ReadAllText(filePath);
+
+                var gameData = JsonConvert.DeserializeObject<dynamic>(json);
+
+                var haveItemArray = gameData.HaveItem;
+
+                var classData = gameData.Player;
+                switch (classData.Class.ToString()) // 직업 Class 문자열 참조해서 플레이어 캐릭터 스탯 로드
+                {
+                    case "전사":
+                        player = classData.ToObject<Warrior>();
+                        break;
+                    case "마법사":
+                        player = classData.ToObject<Wizard>();
+                        break;
+                    case "음악가":
+                        player = classData.ToObject<Musician>();
+                        break;
+                }
+                haveItem = haveItemArray.ToObject<List<Item>>();
+                Item.itemCount = haveItem.Count;
+
+                dungeonFloor = gameData.DungeonFloor;
+                Monster[] dungeonArray = gameData.Dungeon.ToObject<Monster[]>();
+                dungeon = new List<Monster>(dungeonArray);
+            }
         }
     }
 }
