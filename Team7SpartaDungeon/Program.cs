@@ -139,7 +139,7 @@ namespace Team7SpartaDungeon
             public void HighlightPurchased(string s)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write(s);
+                Console.WriteLine(s);
                 Console.ResetColor();
             }
             public void ShopList(bool withNumber, int idx = 0)  // 상점 쇼핑할때
@@ -174,7 +174,6 @@ namespace Team7SpartaDungeon
                 {
                     Console.WriteLine(Gold + "G");
                 }
-                Console.WriteLine("");
 
 
             }
@@ -251,17 +250,13 @@ namespace Team7SpartaDungeon
             Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 10, 50, 500);
             Monster Hansole = new Monster("이한솔매니저님", 5, 20, 0, 10, 30, 100, 1000);
 
-            Item goodSword = (new Item("좋은 검", 0, 10, 2, 0, 1500));
-            Item mediWand = (new Item("명상의 완드", 0, 2, 10, 0, 2000));
-            Item robes = (new Item("현자의 로브", 1, 0, 5, 3, 1200));
-
-
-
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
             List<Item> haveItem = new List<Item>();
             List<Item> dropItem = new List<Item>();
             List<Item> shopItem = new List<Item>();
+            List<Item> hands = new List<Item>(); //장착부위 - 손
+            List<Item> body = new List<Item>();  //장착부위 - 몸통
 
 
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
@@ -303,9 +298,6 @@ namespace Team7SpartaDungeon
 
             public void PlayGame() // 게임 시작 메서드
             {
-                //shopItem.Add(goodSword);      //상점아이템 추가
-                //shopItem.Add(mediWand);
-                //shopItem.Add(robes);
 
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
@@ -599,7 +591,41 @@ namespace Team7SpartaDungeon
 
             {
                 haveItem[idx].IsEquiped = !haveItem[idx].IsEquiped;
+                if (haveItem[idx].Type == 0)
+                {
+                    if (hands.Count == 0)
+                    {
+                        hands.Add(haveItem[idx]);
+                        StatIncrease(idx);
+                    }
+                    else
+                    {
+                        hands[0].IsEquiped = false;
+                        hands.Clear();
+                        hands.Add(haveItem[idx]);
+                        StatIncrease(idx);
+                    }
+                }
+                else if (haveItem[idx].Type == 1)
+                {
+                    if (body.Count == 0)
+                    {
+                        body.Add(haveItem[idx]);
+                        StatIncrease(idx);
+                    }
+                    else
+                    {
+                        body[0].IsEquiped = false;
+                        body.Clear();
+                        body.Add(haveItem[idx]);
+                        StatIncrease(idx);
+                    }
+                }
+               
 
+            }
+            private void StatIncrease(int idx)
+            {
                 if (haveItem[idx].IsEquiped)
                 {
                     player.Atk += haveItem[idx].Atk;
@@ -613,7 +639,6 @@ namespace Team7SpartaDungeon
                     player.Def -= haveItem[idx].Def;
                     player.SkillAtk -= haveItem[idx].SkillAtk;
                 }
-
             }
 
             private void SellMenu()
