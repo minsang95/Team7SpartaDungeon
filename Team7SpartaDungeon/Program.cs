@@ -1207,6 +1207,10 @@ namespace Team7SpartaDungeon
                         if(player.MaxMp < player.Mp) player.Mp = player.MaxMp;
                     }
                     else if (player is Wizard && use == 3)
+                    {
+                        Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
+                        Console.ReadLine();
+                    }
                     //---------------- 음악가 스킬 -----------------------------------------------------------------------------------------------------------------------------------------------
                     if (player is Musician && use == 1 && player.AvailableSkill[use - 1]) // 음악가 1번 스킬 - 타임 코스모스, 그냥 냅다 게임 시작 페이지로 돌아갑니다.
                     {
