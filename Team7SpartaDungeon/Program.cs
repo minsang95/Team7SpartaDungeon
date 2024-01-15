@@ -1,5 +1,8 @@
-﻿using System.Net;
+
+﻿using System;
+using System.Net;
 ﻿using System.Security.Cryptography;
+
 
 namespace Team7SpartaDungeon
 {
@@ -14,6 +17,7 @@ namespace Team7SpartaDungeon
             public float Atk { get; set; }
             public int Def { get; set; }
             public int SkillAtk { get; set; }
+            public int Dex {  get; set; }
             public int MaxHp { get; set; }
             public int Hp { get; set; }
             public int MaxMp { get; set; }
@@ -39,6 +43,7 @@ namespace Team7SpartaDungeon
                 Atk = 10;
                 Def = 5;
                 SkillAtk = 0;
+                Dex = 5;
                 MaxHp = 100;
                 Hp = 100;
                 MaxMp = 50;
@@ -63,6 +68,7 @@ namespace Team7SpartaDungeon
                 Atk = 5;
                 Def = 0;
                 SkillAtk = 10;
+                Dex = 5;
                 MaxHp = 80;
                 Hp = 80;
                 MaxMp = 100;
@@ -74,7 +80,9 @@ namespace Team7SpartaDungeon
                 MpPotion = 1;
                 AvailableSkill = new List<bool>();
                 Skill = new List<string>();
+
                 BurningDmg = 6;
+
             }
         }
 
@@ -84,16 +92,18 @@ namespace Team7SpartaDungeon
             public int Level { set; get; }
             public int Atk { get; set; }
             public int Def { get; set; }
+            public int Dex { get; set; }
             public int Hp { get; set; }
             public int DropExp { get; }
             public int Gold { get; set; }
-            public Monster(string name, int level, int atk, int def, int hp, int dropExp, int gold)
+            public Monster(string name, int level, int atk, int def,int dex, int hp, int dropExp, int gold)
 
             {
                 Name = name;
                 Level = level;
                 Atk = atk;
                 Def = def;
+                Dex = dex;
                 Hp = hp;
                 DropExp = dropExp;
                 Gold = gold;
@@ -110,9 +120,11 @@ namespace Team7SpartaDungeon
             public int Gold { get; set; }
             public int Quantity { get; set; } // 아이템 수량
             public bool IsEquiped { get; set; }
+            public bool IsPurchased { get; set; }
+            public static int shopItemCount;        //상점 쇼핑 카운트 증가 해야 예외처리가 가능해서 추가
             public static int itemCount;
             public static int dropItemCount;
-            public Item(string name, int type, int atk,int skillAtk, int def, int gold, int quantity = 1, bool isEquiped = false)
+            public Item(string name, int type, int atk, int skillAtk, int def, int gold, int quantity = 1, bool isEquiped = false)
             {
                 Name = name;
                 Type = type;
@@ -122,14 +134,18 @@ namespace Team7SpartaDungeon
                 Gold = gold;
                 Quantity = quantity;
                 IsEquiped = isEquiped;
+                IsPurchased = false;
             }
 
-            public void PlayerInventoryList(bool withNumber, int idx = 0)
+            public void ShopList(bool withNumber, int idx = 0, bool showPrice = true)  // 상점 쇼핑할때
             {
                 Console.Write("-");
+
                 if (withNumber)
                 {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
                     Console.Write("{0}", idx);
+                    Console.ResetColor();
                 }
                 if (IsEquiped)
                 {
@@ -141,18 +157,80 @@ namespace Team7SpartaDungeon
                 }
                 Console.Write(Name);
                 Console.Write("  |  ");
-                Console.WriteLine($"{Quantity}개");
+
+                if (Atk != 0) Console.Write($"Atk {(Atk >= 0 ? " + " : "")}{Atk}");
+                if (Def != 0) Console.Write($"Def {(Def >= 0 ? " + " : "")}{Def}");
+                if (showPrice)
+                {
+                    string priceOrStatus = IsPurchased ? "구매완료" : Gold.ToString() + " G";
+                    Console.Write(" | ");
+                    if (IsPurchased)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(priceOrStatus);
+                        Console.ResetColor();
+                    }
+                }
+                Console.WriteLine();
+
 
             }
-        }
+            public void PlayerInventoryList(bool withNumber, int idx = 0)
+            {
 
+
+                if (withNumber)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.Write("{0}", idx);
+                    Console.ResetColor();
+                }
+
+                if (IsEquiped)
+                {
+                    Console.Write("[");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write("E");
+                    Console.ResetColor();
+                    Console.Write("]");
+                }
+                Console.Write(Name);
+                Console.Write("  |  ");
+                Console.WriteLine(Gold);
+            }
+
+            public void SellItemList(bool withNumber, int idx)
+            {
+                if (withNumber)
+                {
+                    Console.Write("{0}", idx);
+                }
+                Console.Write(Name);
+                Console.Write("  |  ");
+                Console.Write((int)Gold * 0.85f+"G");
+                Console.Write("  |  ");
+                Console.WriteLine(Quantity+"개");
+                Console.Write($"ATk: {Atk}");
+                Console.Write("  |  ");
+                Console.Write($"Def: {Def}");
+                Console.Write("  |  ");
+                Console.Write($"Gold: {Gold}");
+                Console.Write("  |  ");
+                Console.WriteLine($"{Quantity}개");
+            }
+
+
+              
+            }
 
 
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
+
             Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
             SpartaDungeon sd = new SpartaDungeon();
+            
             sd.PlayGame();
         }
         //----------------------------------------------------------------------------------------------------------------------------------
@@ -164,15 +242,23 @@ namespace Team7SpartaDungeon
 
             // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
-            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 300);
-            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80, 800);
-            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50, 500);
-            Monster Hansole = new Monster("이한솔매니저님", 5, 20, 0, 30, 100, 1000);
+            Monster minion = new Monster("미니언", 2, 10, 0, 10, 15, 20, 300);
+            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 10, 25, 80, 800);
+            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 10, 50, 500);
+            Monster Hansole = new Monster("이한솔매니저님", 5, 20, 0, 10, 30, 100, 1000);
+
+            Item goodSword = (new Item("좋은 검", 0, 10, 2, 0, 1500));
+            Item mediWand = (new Item("명상의 완드", 0, 2, 10, 0, 2000));
+            Item robes = (new Item("현자의 로브", 1, 0, 5, 3, 1200));
+
+
 
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
             List<Item> haveItem = new List<Item>();
             List<Item> dropItem = new List<Item>();
+            List<Item> shopItem = new List<Item>();
+
 
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
@@ -189,18 +275,33 @@ namespace Team7SpartaDungeon
                 }
                 return choice;
             }
+
+            public void ShopItemTable()  //상점 아이템
+            {
+                shopItem.Add(new Item("[상점] 빛을 잃은 검", 0, 10, 0, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
+                shopItem.Add(new Item("[상점] 빛나는 검", 0, 7, 0, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
+                shopItem.Add(new Item("[상점] 빛을 잃은 갑옷", 1, 0, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
+                shopItem.Add(new Item("[상점] 빛나는 갑옷", 1, 0, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
+
+            }
+
             public void ItemTable() // 아이템 리스트 보관용 메서드
             {
-                items.Add(new Item("낡은 검", 0, 3,0, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
-                items.Add(new Item("보통 검", 0, 7,0, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
-                items.Add(new Item("낡은 갑옷", 1, 0,0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
-                items.Add(new Item("보통 갑옷", 1, 0, 0,15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
-                items.Add(new Item("잡동사니", 2, 0,0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
+                items.Add(new Item("낡은 검", 0, 3, 0, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
+                items.Add(new Item("보통 검", 0, 7, 0, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
+                items.Add(new Item("낡은 갑옷", 1, 0, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
+                items.Add(new Item("보통 갑옷", 1, 0, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
+                items.Add(new Item("잡동사니", 2, 0, 0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
+
             }
+
+           
 
             public void PlayGame() // 게임 시작 메서드
             {
-
+                //shopItem.Add(goodSword);      //상점아이템 추가
+                //shopItem.Add(mediWand);
+                //shopItem.Add(robes);
 
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
@@ -215,6 +316,9 @@ namespace Team7SpartaDungeon
 
                 ItemTable(); // 아이템 리스트 보관용 메서드 초기화
 
+                ShopItemTable();
+
+
 
                 Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사");
                 switch (ChoiceInput(1, 2)) // 직업 선택
@@ -228,11 +332,13 @@ namespace Team7SpartaDungeon
                         break;
                     case 2:
                         player = new Wizard();
+
                         player.Skill.Add("파이어 브레스 - MP 20\n   마법력 * 0.4 로 모든 적을 공격하고, 화상 상태로 만듭니다.(화상 데미지 6 x 4)"); // 마법사 1번 스킬 추가
                         player.AvailableSkill.Add(true);
                         player.Skill.Add("아이스 스피어 - MP 10\n   마법력 + 10 으로 가장 앞에있는 적을 공격한다. 만약 적이 사망할 경우, 초과한 데미지만큼 다음 적이 데미지를 받는다."); // 마법사 2번스킬 추가
                         player.AvailableSkill.Add(false);
                         player.Skill.Add("메디테이션 - MP +10\n   일시적으로 마법력 * 0.5 의 방어력을 얻고 명상에 빠진다.");
+
                         player.AvailableSkill.Add(true);
                         break;
                 }
@@ -241,8 +347,8 @@ namespace Team7SpartaDungeon
                 while (true)
                 {
                     Console.Clear();
-                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3.인벤토리");
-                    switch (ChoiceInput(1, 3)) // 최초 선택지
+                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3.인벤토리\n4.상 점");
+                    switch (ChoiceInput(1, 4)) // 최초 선택지
 
                     {
                         case 1:
@@ -254,6 +360,10 @@ namespace Team7SpartaDungeon
                         case 3:
                             InventoryMenu(); // 아이템 획득 테스트 때문에 임시로 추가
                             break;
+                        case 4:
+                            StoreMenu();
+                            break;
+
                     }
                 }
             }
@@ -298,6 +408,7 @@ namespace Team7SpartaDungeon
                     player.Hp = player.MaxHp; //레벨업 시 회복
                     player.Mp = player.MaxMp;
 
+
                     if (3 == player.Level)
                     {
                         player.AvailableSkill[1] = true;
@@ -309,47 +420,49 @@ namespace Team7SpartaDungeon
 
                 }
             }
-            //public int getBonusAtk()
-            //{
-            //    int sum = 0;
-            //    for (int i = 0; i < haveItem.Count; i++)
-            //    {
-            //        if (haveItem[i].IsEquiped) sum += haveItem[i].Atk;
-            //    }
-            //    return sum;
-            //}
-            //public int getBonusDef()
-            //{
-            //    int sum = 0;
-            //    for (int i = 0; i < haveItem.Count; i++)
-            //    {
-            //        if (haveItem[i].IsEquiped) sum += haveItem[i].Def;
-            //    }
-            //    return sum;
-            //}
-            //public int getBonusSkillAtk()
-            //{
-            //    int sum = 0;
-            //    for (int i = 0; i < haveItem.Count; i++)
-            //    {
-            //        if (haveItem[i].IsEquiped) sum += haveItem[i].SkillAtk;
-            //    }
-            //    return sum;
-            //}
-
             public void Status() // 1. 상태 보기
             {
-                //float bonusAtk = getBonusAtk();
-                //int bonusDef = getBonusDef();
-                //int bonusSkillAtk = getBonusSkillAtk();
                 Console.Clear();
                 Console.WriteLine($"캐릭터의 정보가 표시됩니다.\n\n" +
                                   $" 이름   : {player.Name}\n" +
-                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n 마법력 : {player.SkillAtk}\n" +
+                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n 마법력 : {player.SkillAtk}\n 민첩성 : {player.Dex}\n" +
                                   $" 체 력  : {player.Hp}/{player.MaxHp}\n 마 나  : {player.Mp}/{player.MaxMp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.MaxExp}\n\n" +
                                   $"Enter. 나가기");
                 Console.ReadLine();
             }
+
+            public void StoreMenu()   //상점페이지
+            {
+                Console.Clear();
+                Console.WriteLine("■ 상 점 ■");
+                Console.WriteLine("필요한 아이템을 얻을 수 있는 상점입니다.");
+                Console.WriteLine("");
+                Console.WriteLine("[보유 골드]");
+                Console.WriteLine(player.Gold + "G");
+                Console.WriteLine("");
+                Console.WriteLine("");
+                Console.WriteLine("[아이템 목록]");
+                for (int i = 0; i < 4; i++)
+                {
+                    shopItem[i].ShopList(false, 0, true);
+                }
+                Console.WriteLine("");
+                Console.WriteLine("0. 나가기");
+                Console.WriteLine("1. 아이템 구매");
+                Console.WriteLine("2. 아이템 판매");
+                switch (ChoiceInput(0, 2))
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        Shop();
+                        break;
+                    case 2:
+                        SellMenu();
+                        break;
+                }
+            }
+
 
             public void InventoryMenu()  // 인벤토리
             {
@@ -358,7 +471,11 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("아이템을 관리할 수 있습니다.\n \n [아이템 목록]");
                 if (haveItem.Count <= 0)
                 {
-                    Console.WriteLine("가진 아이템이 없습니다.");
+
+                    Console.WriteLine(" --현재 보유한 아이템이 없습니다--");
+
+                  
+
                 }
                 else
                 {
@@ -367,6 +484,9 @@ namespace Team7SpartaDungeon
                         haveItem[i].PlayerInventoryList(false, 0);
                     }
                 }
+
+
+                Console.WriteLine("");
                 Console.WriteLine("1. 장착관리 \n0. 뒤로가기");
                 switch (ChoiceInput(0, 1))
                 {
@@ -383,7 +503,9 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("장착관리 \n보유 중인 아이템을 관리할 수 있습니다.");
                 Console.WriteLine("");
                 Console.WriteLine("[아이템 목록]");
-                if (haveItem.Count <= 0)
+
+                Console.Write("-");
+                if (haveItem.Count <= 0 && Item.shopItemCount <= 0)
                 {
                     Console.WriteLine("가진 아이템이 없습니다.");
                 }
@@ -393,14 +515,18 @@ namespace Team7SpartaDungeon
                     {
                         haveItem[i].PlayerInventoryList(true, i + 1);
                     }
+      
                 }
-              
+
+                Console.WriteLine("");
+                Console.WriteLine("장착하고 싶은 아이템 숫자를 선택하세요");
 
                 Console.WriteLine("\n0.돌아가기");
                 int keyInput = ChoiceInput(0, haveItem.Count);
                 switch (keyInput)
                 {
                     case 0:
+                        InventoryMenu();
                         break;
                     default:
                         ItemEpuipToggle(keyInput - 1);
@@ -410,9 +536,63 @@ namespace Team7SpartaDungeon
 
             }
 
-            
+            public void Shop()
+            {
+                Console.Clear();
+                Console.WriteLine("■ 상 점 - 구매하기 ■");
+                Console.WriteLine("필요한 아이템을 구매 할 수 있습니다.\n");
+                Console.WriteLine("");
+                Console.WriteLine("[보유 골드]");
+                Console.WriteLine(player.Gold + "G");
+                Console.WriteLine("");
+                Console.WriteLine("[아이템 목록]");
+                Console.WriteLine("");
+                for (int i = 0; i < 4; i++)
+                {
+                    shopItem[i].ShopList(true, i + 1, true);
+                }
+                Console.WriteLine("\n구매하고 싶은 아이템 번호를 입력 해주세요.");
+                Console.WriteLine("0을 입력하면 상점으로 돌아갑니다.");
+                Console.WriteLine("");
 
-            private void ItemEpuipToggle(int idx)
+                int choice = ChoiceInput(0, 4); // 0 입력 가능
+                if (choice == 0) // 0 입력 시 상점 메뉴로 복귀
+                {
+                    StoreMenu();
+                    return;
+                }
+
+                choice -= 1;
+                Item selectedItem = shopItem[choice];
+                if (selectedItem.IsPurchased)
+                {
+                    Console.WriteLine("이미 구매한 아이템입니다.");
+                }
+                else if (player.Gold >= selectedItem.Gold)
+                {
+                    selectedItem.IsPurchased = true;
+                    haveItem.Add(shopItem[choice]);
+                    player.Gold -= selectedItem.Gold;
+
+
+                    Console.WriteLine($"\n{selectedItem.Name} 구매를 완료했습니다.");
+                    Item.shopItemCount++;
+                    Item.itemCount++;
+
+                }
+                else
+                {
+                    Console.WriteLine("Gold가 부족합니다.");
+                }
+
+                Console.WriteLine("아무 키나 누르면, 상점으로 돌아갑니다.");
+                Console.ReadKey();
+                StoreMenu();
+            }
+
+
+            private void ItemEpuipToggle(int idx) //아이템 장착과 스탯 증감
+
             {
                 haveItem[idx].IsEquiped = !haveItem[idx].IsEquiped;
 
@@ -432,6 +612,81 @@ namespace Team7SpartaDungeon
 
             }
 
+            private void SellMenu()
+            {
+                
+                Console.Clear();
+                Console.WriteLine("상점 - 판매");
+                Console.WriteLine("어떤 아이템을 판매하시겠습니까?");
+                Console.WriteLine("");
+                Console.WriteLine("보유 골드");
+                Console.WriteLine(player.Gold + "G");
+                Console.WriteLine("");
+                Console.WriteLine("[판매가능 아이템 목록]");
+                if (haveItem.Count > 0)
+                {
+                    for (int i = 0; i < haveItem.Count; i++)
+                    {
+                        haveItem[i].SellItemList(true, i + 1);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("가진 아이템이 없습니다.");
+                }
+                Console.WriteLine("");
+                Console.WriteLine("0. 돌아가기");
+                int keyInput = ChoiceInput(0, haveItem.Count);
+                switch(keyInput)
+                {
+                    case 0:
+                        Shop();
+                        break;
+                    default:
+                        ItemSell(keyInput - 1);
+                        SellMenu();
+                        break;
+                }
+
+            }
+            private void ItemSell(int Idx)
+            {
+                if (haveItem[Idx].Quantity > 1)
+                {
+                    Console.WriteLine("몇 개를 판매하시겠습니까?");
+                    Console.WriteLine("0. 취소");
+                    int keyInput = ChoiceInput(0, haveItem[Idx].Quantity);
+                    switch (keyInput)
+                    {
+                        case 0:
+                            SellMenu();
+                            break;
+                        default:
+                            {
+                                haveItem[Idx].IsPurchased = false;
+                                player.Gold += (int)(haveItem[Idx].Gold * 0.85f)*keyInput;
+                                haveItem[Idx].Quantity -= keyInput;
+                                if (haveItem[Idx].Quantity<=0)
+                                {
+                                    haveItem.Remove(haveItem[Idx]);
+                                    Item.itemCount--;
+                                }
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    haveItem[Idx].IsPurchased = false;
+                    player.Gold += (int)(haveItem[Idx].Gold * 0.85f);
+                    haveItem.Remove(haveItem[Idx]);
+                    Item.itemCount--;
+                }
+
+            }
+    
+
+
             public void BattleStart() // 2. 전투 시작
             {
                 int diff = dungeonFloor * 2;  // 난이도 보정
@@ -442,7 +697,7 @@ namespace Team7SpartaDungeon
                 int beforeHp = player.Hp;
                 int beforeMp = player.Mp;
                 int beforeExp = player.Exp;
-                
+
 
                 for (int i = 0; i < r.Next((1 + diff), (5 + diff)); i++)   //난이도에 따른 몹 마릿수 증가
                 {
@@ -488,14 +743,22 @@ namespace Team7SpartaDungeon
                     Console.ResetColor();
                     for (int i = 0; i < monsters.Count; i++)
                     {
-                        if (!(monsterHp[i] <= 0))
-                            Console.WriteLine($"   Lv.{monsters[i].Level} {monsters[i].Name} HP {monsterHp[i]}/{monsters[i].Hp}");
-                        else
+                        if (monsterHp[i] <= 0)
                         {
                             Console.ForegroundColor = ConsoleColor.DarkGray;
                             Console.WriteLine($"   Lv.{monsters[i].Level} {monsters[i].Name} Dead");
                             Console.ResetColor();
                         }
+                        else if (0 < monsterHp[i] && 0 < monsterBurn[i])
+                        {
+                            Console.Write($"   Lv.{monsters[i].Level} {monsters[i].Name} HP {monsterHp[i]}/{monsters[i].Hp}");
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine(" ♨");
+                            Console.ResetColor();
+                        }
+                        else if (0 < monsterHp[i])
+                            Console.WriteLine($"   Lv.{monsters[i].Level} {monsters[i].Name} HP {monsterHp[i]}/{monsters[i].Hp}");
+
                     }
                     Console.WriteLine($"\n\n   [내정보]\n\n   Lv.{player.Level} {player.Name} ({player.Class})\n   HP {player.Hp}/{player.MaxHp}\n   MP {player.Mp}/{player.MaxMp}");
                 }
@@ -669,6 +932,11 @@ namespace Team7SpartaDungeon
                                     monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 2.4);
                                     monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 2.4);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk1);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 3 + atk2);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]- 치명타!!");
                                     Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]- 치명타!!");
@@ -678,6 +946,11 @@ namespace Team7SpartaDungeon
                                     monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk1);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 3 + atk2);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]");
                                     Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]");
@@ -711,6 +984,9 @@ namespace Team7SpartaDungeon
                                 {
                                     monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 2.4);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]- 치명타!!");
                                 }
@@ -718,6 +994,9 @@ namespace Team7SpartaDungeon
                                 {
                                     monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
                                 }
@@ -747,16 +1026,22 @@ namespace Team7SpartaDungeon
                         if (20 <= player.Mp)
                         {
                             player.Mp -= 20;
-                            for (int i = 0; i < monsters.Count; i++)
+
+                            for (int i = monsters.Count-1; 0 <= i; i--)
+
                             {
                                 int bh = monsterHp[i];
                                 if (0 < monsterHp[i])
                                 {
+
+                                   
                                     monsterHp[i] -= (int)Math.Ceiling(player.SkillAtk * 0.4f);
                                     monsterBurn[i] = 4;
                                     BattleField();
                                     Console.SetCursorPosition(0, 3 + i);
-                                    Console.WriteLine($"◎");
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"◎▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒·");
+                                    Console.ResetColor();
                                     Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 파이어 브레스!\n");
                                     Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[i]}]");
@@ -805,6 +1090,20 @@ namespace Team7SpartaDungeon
                                 if (monsterHp[atk] < 0)
                                     monsterHp[atk - next] += monsterHp[atk];
                                 BattleField();
+
+
+                                Console.SetCursorPosition(0, 3 + atk);
+                                if (monsterHp[atk] < 0) Console.SetCursorPosition(0, 3 + atk - next);
+                                Console.ForegroundColor = ConsoleColor.Blue;
+                                Console.Write($"◎");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒▲▒");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒§▒");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒§▒");
+                                Console.ResetColor();
+                                Console.SetCursorPosition(0, 11 + monsters.Count);
                                 Console.WriteLine($"\n\n{player.Name} 의 아이스 스피어!\n");
                                 if (monsterHp[atk] < 0)
                                     Console.WriteLine($"Lv.{monsters[atk - next].Level} {monsters[atk - next].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk - next]}]");
@@ -828,6 +1127,18 @@ namespace Team7SpartaDungeon
                                 int bh = monsterHp[atk];
                                 monsterHp[atk] -= player.SkillAtk + 10;
                                 BattleField();
+                                Console.SetCursorPosition(0, 3 + atk);
+                                Console.ForegroundColor = ConsoleColor.Blue;
+                                Console.Write($"◎");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒▲▒");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒§▒");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒§▒");
+                                Console.ResetColor();
+                                Console.SetCursorPosition(0, 11 + monsters.Count);
+                                Console.WriteLine($"\n\n{player.Name} 의 아이스 스피어!\n");
                                 Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
                                 if (monsterHp[atk] <= 0)
                                     Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {bh} -> Dead");
@@ -847,6 +1158,7 @@ namespace Team7SpartaDungeon
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
+
                     if (player is Wizard && use == 3 && player.AvailableSkill[use - 1]) // 마법사 3번 스킬 // 메디테이션 - MP +10, 일시적으로 마법력 * 0.5 의 방어력을 얻고 명상에 빠진다.
                     {
                         int bd = player.Def;
@@ -864,6 +1176,7 @@ namespace Team7SpartaDungeon
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
+
                 }
 
                 void EnemyFrontPhase()
@@ -877,7 +1190,10 @@ namespace Team7SpartaDungeon
                             monsterBurn[i]--;
                             BattleField();
                             Console.SetCursorPosition(0, 3 + i);
-                            Console.WriteLine($"♨");
+
+
+                            Console.WriteLine($"▷");
+
                             Console.SetCursorPosition(0, 11 + monsters.Count);
                             Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name} 이(가) 화상으로 데미지를 받았다. [데미지 : {bh - monsterHp[i]}]");
                             if (monsterHp[i] <= 0)
@@ -893,19 +1209,40 @@ namespace Team7SpartaDungeon
                 {
                     for (int i = 0; i < monsters.Count; i++)
                     {
+                        BattleField();
                         int befHp = player.Hp;
                         int damage = monsters[i].Atk - player.Def;    // 몬스터 데미지
-                        if (damage < 0) damage = 0;
+                        if (damage < 1) damage = 1;
                         if (0 < monsterHp[i])
                         {
-
-                            player.Hp -= damage;
-                            BattleField();
                             Console.SetCursorPosition(0, 3 + i);
                             Console.WriteLine($"▶");
                             Console.SetCursorPosition(0, 11 + monsters.Count);
-                            Console.WriteLine("\n");
-                            Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 의 공격!\n{player.Name} 을(를) 맞췄습니다. [데미지 : {befHp - player.Hp}]\n");
+                            Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 의 공격!\n");
+                            Console.WriteLine("1. 방어하기\n2. 피하기");
+                            switch (ChoiceInput(1, 2))
+                            {
+                                case 1:
+                                    player.Hp -= damage;
+                                    BattleField();
+                                    Console.WriteLine($"\n{player.Name} 을(를) 맞췄습니다. [데미지 : {befHp - player.Hp}]\n");
+                                    break;
+                                case 2:
+                                    int Dodge = r.Next(0, player.Dex + monsters[i].Dex);
+                                    if (Dodge < player.Dex)
+                                    {
+                                        BattleField();
+                                        Console.WriteLine($"\n{player.Name} 이(가) 공격을 피했습니다!");
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        player.Hp -= monsters[i].Atk;
+                                        BattleField();
+                                        Console.WriteLine($"\n{player.Name} 을(를) 맞췄습니다. [데미지 : {befHp - player.Hp}]\n");
+                                        break;
+                                    }
+                            }
                             if (player.Hp <= 0)
                             {
                                 Console.WriteLine($"Lv.{player.Level} {player.Name}\nHP {befHp} -> Dead\n\nEnter. 다음");
@@ -971,13 +1308,12 @@ namespace Team7SpartaDungeon
                     Console.ReadKey();
                     LevelUp();
                     GetRewards();
-                    
+
                     if (dungeonFloor % 3 == 0)                                          // 3층마다 이한솔매니저님 몹 추가
                     {
                         dungeon.Add(Hansole);
                     }
-                   
-                    
+
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
 
