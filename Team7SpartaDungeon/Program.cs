@@ -854,6 +854,11 @@ namespace Team7SpartaDungeon
                                     monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 2.4);
                                     monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 2.4);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk1);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 3 + atk2);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]- 치명타!!");
                                     Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]- 치명타!!");
@@ -863,6 +868,11 @@ namespace Team7SpartaDungeon
                                     monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk1);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 3 + atk2);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]");
                                     Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]");
@@ -896,6 +906,9 @@ namespace Team7SpartaDungeon
                                 {
                                     monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 2.4);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]- 치명타!!");
                                 }
@@ -903,6 +916,9 @@ namespace Team7SpartaDungeon
                                 {
                                     monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
                                 }
