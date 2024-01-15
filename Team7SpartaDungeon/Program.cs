@@ -1008,28 +1008,39 @@ namespace Team7SpartaDungeon
                 }
                 void GetRewards() // 던전 보상 메서드
                 {
-                    Console.Clear();
-                    Random r = new Random(); // 랜덤 객체 생성, 랜덤 숫자를 생성하려고
-                    int totalGold = 0; //획득 골드 표시하려고, 일단 초기화
 
-                    for (int i = 0; i < monsters.Count; i++) // 몬스터 리스트 수 만큼 반복
+                    Console.Clear();
+                    Random r = new Random();
+                    int totalGold = 0;
+
+                    dropItem.Clear();
+
+                    for (int i = 0; i < monsters.Count; i++)
                     {
-                        totalGold += monsters[i].Gold;  // 몬스터의 골드를 획득 골드에 추가
-                        if (items.Count > 0) // 아이템 리스트에 아이템이 있는지 확인
+                        totalGold += monsters[i].Gold;
+                        if (items.Count > 0)
                         {
                             int itemIdx = r.Next(items.Count); // 아이템 리스트 내에서 랜덤한 인덱스 선택
-                            dropItem.Add(items[itemIdx]);
-                            Item.dropItemCount += itemIdx; // 드랍 아이템 개수 1 증가
+                            Item newItem = items[itemIdx];
 
-                            //
-                            var existingItem = haveItem.FirstOrDefault(item => item.Name == dropItem[i].Name);
-                            if (existingItem != null)
+                            var existingDropItem = dropItem.FirstOrDefault(item => item.Name == newItem.Name);
+                            if (existingDropItem != null)
                             {
-                                existingItem.Quantity++; // 이미 있는 아이템이면 수량 증가
+                                existingDropItem.Quantity++; // dropItem 리스트에 이미 존재하는 경우 수량 증가
                             }
                             else
                             {
-                                haveItem.Add(dropItem[i]); // 새 아이템 추가
+                                dropItem.Add(new Item(newItem.Name, newItem.Type, newItem.Atk, newItem.SkillAtk, newItem.Def, newItem.Gold, 1, false)); // 새 아이템 추가
+                            }
+
+                            var existingHaveItem = haveItem.FirstOrDefault(item => item.Name == newItem.Name);
+                            if (existingHaveItem != null)
+                            {
+                                existingHaveItem.Quantity++; // haveItem 리스트에 이미 존재하는 경우 수량 증가
+                            }
+                            else
+                            {
+                                haveItem.Add(new Item(newItem.Name, newItem.Type, newItem.Atk, newItem.SkillAtk, newItem.Def, newItem.Gold, 1, false)); // 새 아이템 추가
                                 Item.itemCount++;
                             }
                         }
@@ -1042,15 +1053,17 @@ namespace Team7SpartaDungeon
                     Console.ResetColor();
                     player.Gold += totalGold;
                     Console.Write(" Gold\n");
-                    foreach (var item in haveItem) // 아이템의 이름과 수량을 순회
+
+                    foreach (var item in dropItem) // 
                     {
                         Console.WriteLine("");
                         Console.Write($"{item.Name} - "); // 아이템 이름
                         Console.ForegroundColor = ConsoleColor.Magenta;
-                        Console.Write(item.Quantity); // 아이템 수량
+                        Console.Write(item.Quantity); // dropItem 수
                         Console.ResetColor();
                         Console.Write(" 개\n");
                     }
+
                 }
                 void HpRecovery()
                 {
@@ -1222,8 +1235,8 @@ namespace Team7SpartaDungeon
                 {
                     Player = player,
                     HaveItem = haveItem.ToList(), // 내가 가지고 있는 아이템 리스트화
-                    DungeonFloor = dungeonFloor, 
-                    Dungeon = dungeon    
+                    DungeonFloor = dungeonFloor,
+                    Dungeon = dungeon
                 };
                 string json = JsonConvert.SerializeObject(gameData, Formatting.Indented);
                 File.WriteAllText(filePath, json);
@@ -1250,7 +1263,7 @@ namespace Team7SpartaDungeon
                         break;
                 }
                 haveItem = haveItemArray.ToObject<List<Item>>();
-                Item.itemCount = haveItem.Count; 
+                Item.itemCount = haveItem.Count;
 
                 dungeonFloor = gameData.DungeonFloor;
                 Monster[] dungeonArray = gameData.Dungeon.ToObject<Monster[]>();
