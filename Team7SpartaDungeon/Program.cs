@@ -659,7 +659,7 @@ namespace Team7SpartaDungeon
                         default:
                             {
                                 haveItem[Idx].IsPurchased = false;
-                                player.Gold += (int)(haveItem[Idx].Gold * 0.85f);
+                                player.Gold += (int)(haveItem[Idx].Gold * 0.85f)*keyInput;
                                 haveItem[Idx].Quantity -= keyInput;
                                 if (haveItem[Idx].Quantity<=0)
                                 {
