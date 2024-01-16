@@ -246,10 +246,10 @@ namespace Team7SpartaDungeon
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
+            Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
             SoundPlayer player = new SoundPlayer(@"C:\bgm.wav"); // C드라이브 bgm.wav 재생 
             player.PlayLooping(); // bgm 루프
-
-            Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
+            PrintStartLogo();
             SpartaDungeon sd = new SpartaDungeon();
             sd.PlayGame();
             Console.Beep();
@@ -1698,6 +1698,32 @@ namespace Team7SpartaDungeon
                 Monster[] dungeonArray = gameData.Dungeon.ToObject<Monster[]>();
                 dungeon = new List<Monster>(dungeonArray);
             }
+        }
+        private static void PrintStartLogo() // 게임 스타트 로고
+        {
+            Console.WriteLine("===============================================================================");
+            Console.WriteLine("███████╗     ██████╗ ██████╗  ██████╗ ██╗   ██╗██████╗ ███████╗  ");
+            Console.WriteLine("╚════██║    ██╔════╝ ██╔══██╗██╔═══██╗██║   ██║██╔══██╗██╔════╝  ");
+            Console.WriteLine("    ██╔╝    ██║  ███╗██████╔╝██║   ██║██║   ██║██████╔╝███████╗ ");
+            Console.WriteLine("   ██╔╝     ██║   ██║██╔══██╗██║   ██║██║   ██║██╔═══╝ ╚════██║");
+            Console.WriteLine("   ██║      ╚██████╔╝██║  ██║╚██████╔╝╚██████╔╝██║     ███████║  ");
+            Console.WriteLine("   ╚═╝       ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚══════╝    ");
+            Console.WriteLine(" ██████╗ ██████╗ ███████╗ █████╗ ████████╗  ");
+            Console.WriteLine("██╔════╝ ██╔══██╗██╔════╝██╔══██╗╚══██╔══╝");
+            Console.WriteLine("██║  ███╗██████╔╝█████╗  ███████║   ██║  ");
+            Console.WriteLine("██║   ██║██╔══██╗██╔══╝  ██╔══██║   ██║   ");
+            Console.WriteLine("╚██████╔╝██║  ██║███████╗██║  ██║   ██║");
+            Console.WriteLine(" ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝ ");
+            Console.WriteLine(" █████╗ ██████╗ ██╗   ██╗███████╗███╗   ██╗████████╗██╗   ██╗██████╗ ███████╗");
+            Console.WriteLine("██╔══██╗██╔══██╗██║   ██║██╔════╝████╗  ██║╚══██╔══╝██║   ██║██╔══██╗██╔════╝");
+            Console.WriteLine("███████║██║  ██║██║   ██║█████╗  ██╔██╗ ██║   ██║   ██║   ██║██████╔╝█████╗ ");
+            Console.WriteLine("██╔══██║██║  ██║╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ██║   ██║██╔══██╗██╔══╝  ");
+            Console.WriteLine("██║  ██║██████╔╝ ╚████╔╝ ███████╗██║ ╚████║   ██║   ╚██████╔╝██║  ██║███████╗");
+            Console.WriteLine("╚═╝  ╚═╝╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝");
+            Console.WriteLine("==============================================================================");
+            Console.WriteLine("                            PRESS ANY KEY TO CONTINUE . . .                              ");
+            Console.WriteLine("==============================================================================");
+            Console.ReadKey();
         }
     }
 }
