@@ -225,7 +225,9 @@ namespace Team7SpartaDungeon
             {
                 if (withNumber)
                 {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
                     Console.Write("{0}", idx);
+                    Console.ResetColor();
                 }
                 Console.Write(Name);
                 Console.Write("  |  ");
@@ -660,10 +662,13 @@ namespace Team7SpartaDungeon
             {
                 
                 Console.Clear();
-                Console.WriteLine("상점 - 판매");
+                Console.WriteLine("■ 상 점 - 판매하기 ■");
                 Console.WriteLine("어떤 아이템을 판매하시겠습니까?");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(" ※상점에서 구매한 장비는 구매 시의 85% 가격으로 판매가능합니다.");
+                Console.ResetColor();
                 Console.WriteLine("");
-                Console.WriteLine("보유 골드");
+                Console.WriteLine("[보유 골드]");
                 Console.WriteLine(player.Gold + "G");
                 Console.WriteLine("");
                 Console.WriteLine("[판매가능 아이템 목록]");
@@ -676,9 +681,10 @@ namespace Team7SpartaDungeon
                 }
                 else
                 {
-                    Console.WriteLine("가진 아이템이 없습니다.");
+                    Console.WriteLine("--판매 가능한 아이템이 없습니다--");
                 }
                 Console.WriteLine("");
+                Console.WriteLine("판매하고 싶은 아이템의 숫자를 입력해주세요");
                 Console.WriteLine("0. 돌아가기");
                 int keyInput = ChoiceInput(0, haveItem.Count);
                 switch(keyInput)
@@ -714,6 +720,7 @@ namespace Team7SpartaDungeon
                                 }
                                 else
                                 {
+                                   
                                     haveItem[Idx].IsPurchased = false;
                                     player.Gold += (int)(haveItem[Idx].Gold * 0.85f) * keyInput;
                                     haveItem[Idx].Quantity -= keyInput;
@@ -737,6 +744,8 @@ namespace Team7SpartaDungeon
                     }
                     else
                     {
+
+                       
                         haveItem[Idx].IsPurchased = false;
                         player.Gold += (int)(haveItem[Idx].Gold * 0.85f);
                         haveItem.Remove(haveItem[Idx]);
