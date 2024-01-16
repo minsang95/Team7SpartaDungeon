@@ -1650,7 +1650,7 @@ namespace Team7SpartaDungeon
                             player.Mp = Math.Min(player.Mp + 30, player.MaxMp);
                             int recoveryMp = player.Mp - currentMp; // 회복량 계산 
                             player.MpPotion--; // 1개 소모
-                            Console.Write("\n체력을 ");
+                            Console.Write("\n마나를 ");
                             Console.ForegroundColor = ConsoleColor.Green;
                             Console.Write(recoveryMp); // 회복량 출력
                             Console.ResetColor();
@@ -1676,15 +1676,15 @@ namespace Team7SpartaDungeon
                             Console.Write("입니다.");
                             Console.WriteLine();
                         }
-                        else
-                        {
-                            Console.Write("마나 포션이 ");
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.Write("부족");
-                            Console.ResetColor();
-                            Console.Write("합니다!");
-                            Console.WriteLine();
-                        }
+                    }
+                    else
+                    {
+                        Console.Write("마나 포션이 ");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("부족");
+                        Console.ResetColor();
+                        Console.Write("합니다!");
+                        Console.WriteLine();
                     }
                 }
             }
