@@ -177,14 +177,6 @@ namespace Team7SpartaDungeon
                     Console.Write("{0}", idx);
                     Console.ResetColor();
                 }
-                if (IsEquiped)
-                {
-                    Console.Write("[");
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Write("E");
-                    Console.ResetColor();
-                    Console.Write("]");
-                }
                 Console.Write(Name);
                 Console.Write("  |  ");
 
@@ -597,37 +589,53 @@ namespace Team7SpartaDungeon
 
             private void ItemEpuipToggle(int idx) //아이템 장착과 스탯 증감
             {
-                haveItem[idx].IsEquiped = !haveItem[idx].IsEquiped;
-                if (haveItem[idx].Type == 0)
+                if (!haveItem[idx].IsEquiped)
                 {
-                    if (hands.Count == 0)
+                    if (haveItem[idx].Type == 0)
                     {
-                        hands.Add(haveItem[idx]);
-                        StatIncrease(idx);
+                        if (hands.Count == 0)
+                        {
+                            haveItem[idx].IsEquiped = true;
+                            hands.Add(haveItem[idx]);
+                            StatIncrease(idx);
+                        }
+                        else
+                        {
+                            hands[0].IsEquiped = false;
+                            haveItem[idx].IsEquiped = true;
+                            hands.Clear();
+                            hands.Add(haveItem[idx]);
+                            StatIncrease(idx);
+                        }
+                    }
+                    else if (haveItem[idx].Type == 1)
+                    {
+                        if (body.Count == 0)
+                        {
+                            haveItem[idx].IsEquiped = true;
+                            body.Add(haveItem[idx]);
+                            StatIncrease(idx);
+                        }
+                        else
+                        {
+                            body[0].IsEquiped = false;
+                            haveItem[idx].IsEquiped = true;
+                            body.Clear();
+                            body.Add(haveItem[idx]);
+                            StatIncrease(idx);
+                        }
                     }
                     else
                     {
-                        hands[0].IsEquiped = false;
-                        hands.Clear();
-                        hands.Add(haveItem[idx]);
-                        StatIncrease(idx);
+                        Console.WriteLine("장비 아이템이 아닙니다.");
                     }
                 }
-                else if (haveItem[idx].Type == 1)
+                else
                 {
-                    if (body.Count == 0)
-                    {
-                        body.Add(haveItem[idx]);
-                        StatIncrease(idx);
-                    }
-                    else
-                    {
-                        body[0].IsEquiped = false;
-                        body.Clear();
-                        body.Add(haveItem[idx]);
-                        StatIncrease(idx);
-                    }
+                    haveItem[idx].IsEquiped = false;
+                    StatIncrease(idx);
                 }
+              
                
 
             }
@@ -699,13 +707,21 @@ namespace Team7SpartaDungeon
                             break;
                         default:
                             {
-                                haveItem[Idx].IsPurchased = false;
-                                player.Gold += (int)(haveItem[Idx].Gold * 0.85f)*keyInput;
-                                haveItem[Idx].Quantity -= keyInput;
-                                if (haveItem[Idx].Quantity<=0)
+                                if (haveItem[Idx].IsEquiped && keyInput >= haveItem[Idx].Quantity)
                                 {
-                                    haveItem.Remove(haveItem[Idx]);
-                                    Item.itemCount--;
+                                    Console.WriteLine("장비중인 아이템은 팔 수 없습니다.");
+                                    Console.ReadKey();
+                                }
+                                else
+                                {
+                                    haveItem[Idx].IsPurchased = false;
+                                    player.Gold += (int)(haveItem[Idx].Gold * 0.85f) * keyInput;
+                                    haveItem[Idx].Quantity -= keyInput;
+                                    if (haveItem[Idx].Quantity <= 0)
+                                    {
+                                        haveItem.Remove(haveItem[Idx]);
+                                        Item.itemCount--;
+                                    }
                                 }
                                 break;
                             }
@@ -713,10 +729,19 @@ namespace Team7SpartaDungeon
                 }
                 else
                 {
-                    haveItem[Idx].IsPurchased = false;
-                    player.Gold += (int)(haveItem[Idx].Gold * 0.85f);
-                    haveItem.Remove(haveItem[Idx]);
-                    Item.itemCount--;
+                    if (haveItem[Idx].IsEquiped)
+                    {
+                        Console.WriteLine("장비중인 아이템은 팔 수 없습니다.");
+                        Console.ReadKey();
+
+                    }
+                    else
+                    {
+                        haveItem[Idx].IsPurchased = false;
+                        player.Gold += (int)(haveItem[Idx].Gold * 0.85f);
+                        haveItem.Remove(haveItem[Idx]);
+                        Item.itemCount--;
+                    }
                 }
 
             }
