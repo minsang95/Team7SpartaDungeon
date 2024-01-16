@@ -3,6 +3,8 @@ using System.Security.Cryptography;
 using Newtonsoft.Json;
 using System.IO;
 using static Team7SpartaDungeon.Program;
+using System.Threading;
+using System.Media;
 
 
 namespace Team7SpartaDungeon
@@ -18,7 +20,7 @@ namespace Team7SpartaDungeon
             public float Atk { get; set; }
             public int Def { get; set; }
             public int SkillAtk { get; set; }
-            public int Dex {  get; set; }
+            public int Dex { get; set; }
             public int MaxHp { get; set; }
             public int Hp { get; set; }
             public int MaxMp { get; set; }
@@ -121,7 +123,7 @@ namespace Team7SpartaDungeon
             public int Hp { get; set; }
             public int DropExp { get; }
             public int Gold { get; set; }
-            public Monster(string name, int level, int atk, int def,int dex, int hp, int dropExp, int gold)
+            public Monster(string name, int level, int atk, int def, int dex, int hp, int dropExp, int gold)
 
             {
                 Name = name;
@@ -231,7 +233,7 @@ namespace Team7SpartaDungeon
                 }
                 Console.Write(Name);
                 Console.Write("  |  ");
-                Console.Write((int)Gold * 0.85f+"G");
+                Console.Write((int)Gold * 0.85f + "G");
                 Console.Write("  |  ");
                 Console.Write($"ATk: {Atk}");
                 Console.Write("  |  ");
@@ -239,21 +241,23 @@ namespace Team7SpartaDungeon
                 Console.Write("  |  ");
                 Console.WriteLine($"{Quantity}개");
             }
+        }
 
-
-              
-            }
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
+            SoundPlayer player = new SoundPlayer(@"C:\bgm.wav"); // C드라이브 bgm.wav 재생 
+            player.PlayLooping(); // bgm 루프
+
             Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
             SpartaDungeon sd = new SpartaDungeon();
             sd.PlayGame();
+            Console.Beep();
         }
         public class SpartaDungeon
         {
             static int dungeonFloor = 0;       // 던전 층수
-            // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
+                                               // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
             Monster minion = new Monster("미니언", 2, 10, 0, 10, 15, 20, 300);
             Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 10, 25, 80, 800);
@@ -295,7 +299,7 @@ namespace Team7SpartaDungeon
             }
 
             public void ItemTable() // 아이템 리스트 보관용 메서드
-             // 아이템 리스트 보관용
+                                    // 아이템 리스트 보관용
             {
                 items.Add(new Item("낡은 검", 0, 3, 0, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
                 items.Add(new Item("보통 검", 0, 7, 0, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
@@ -515,7 +519,7 @@ namespace Team7SpartaDungeon
                     {
                         haveItem[i].PlayerInventoryList(true, i + 1);
                     }
-      
+
                 }
                 Console.WriteLine("");
                 Console.WriteLine("장착하고 싶은 아이템 숫자를 선택하세요");
@@ -637,8 +641,8 @@ namespace Team7SpartaDungeon
                     haveItem[idx].IsEquiped = false;
                     StatIncrease(idx);
                 }
-              
-               
+
+
 
             }
             private void StatIncrease(int idx)
@@ -660,7 +664,7 @@ namespace Team7SpartaDungeon
 
             private void SellMenu()
             {
-                
+
                 Console.Clear();
                 Console.WriteLine("■ 상 점 - 판매하기 ■");
                 Console.WriteLine("어떤 아이템을 판매하시겠습니까?");
@@ -687,7 +691,7 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("판매하고 싶은 아이템의 숫자를 입력해주세요");
                 Console.WriteLine("0. 돌아가기");
                 int keyInput = ChoiceInput(0, haveItem.Count);
-                switch(keyInput)
+                switch (keyInput)
                 {
                     case 0:
                         Shop();
@@ -754,7 +758,7 @@ namespace Team7SpartaDungeon
                 }
 
             }
-    
+
 
 
             public void BattleStart() // 2. 전투 시작
@@ -1097,14 +1101,14 @@ namespace Team7SpartaDungeon
                         {
                             player.Mp -= 20;
 
-                            for (int i = monsters.Count-1; 0 <= i; i--)
+                            for (int i = monsters.Count - 1; 0 <= i; i--)
 
                             {
                                 int bh = monsterHp[i];
                                 if (0 < monsterHp[i])
                                 {
 
-                                   
+
                                     monsterHp[i] -= (int)Math.Ceiling(player.SkillAtk * 0.4f);
                                     monsterBurn[i] = 4;
                                     BattleField();
@@ -1238,7 +1242,7 @@ namespace Team7SpartaDungeon
                         EnemyFrontPhase();
                         player.Def = bd;
                         player.Mp += 10;
-                        if(player.MaxMp < player.Mp) player.Mp = player.MaxMp;
+                        if (player.MaxMp < player.Mp) player.Mp = player.MaxMp;
                     }
                     else if (player is Wizard && use == 3)
                     {
@@ -1697,3 +1701,25 @@ namespace Team7SpartaDungeon
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+                                                                             
