@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System.IO;
 using static Team7SpartaDungeon.Program;
 using System.Threading;
+using System.Media;
 
 
 namespace Team7SpartaDungeon
@@ -238,13 +239,14 @@ namespace Team7SpartaDungeon
                 Console.Write("  |  ");
                 Console.WriteLine($"{Quantity}개");
             }
-
-
-
         }
+
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
+            SoundPlayer player = new SoundPlayer(@"C:\bgm.wav"); // C드라이브 bgm.wav 재생 
+            player.PlayLooping(); // bgm 루프
+
             Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
             SpartaDungeon sd = new SpartaDungeon();
             sd.PlayGame();
