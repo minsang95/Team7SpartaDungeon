@@ -1,5 +1,13 @@
-﻿using System.Net;
-﻿using System.Security.Cryptography;
+using System.Net;
+using System.Security.Cryptography;
+using Newtonsoft.Json;
+using System.IO;
+using static Team7SpartaDungeon.Program;
+using System.Threading;
+using System.Media;
+using System.Threading.Channels;
+using System.Text;
+
 
 namespace Team7SpartaDungeon
 {
@@ -14,6 +22,7 @@ namespace Team7SpartaDungeon
             public float Atk { get; set; }
             public int Def { get; set; }
             public int SkillAtk { get; set; }
+            public int Dex { get; set; }
             public int MaxHp { get; set; }
             public int Hp { get; set; }
             public int MaxMp { get; set; }
@@ -39,6 +48,7 @@ namespace Team7SpartaDungeon
                 Atk = 10;
                 Def = 5;
                 SkillAtk = 0;
+                Dex = 5;
                 MaxHp = 100;
                 Hp = 100;
                 MaxMp = 50;
@@ -63,6 +73,7 @@ namespace Team7SpartaDungeon
                 Atk = 5;
                 Def = 0;
                 SkillAtk = 10;
+                Dex = 5;
                 MaxHp = 80;
                 Hp = 80;
                 MaxMp = 100;
@@ -74,26 +85,54 @@ namespace Team7SpartaDungeon
                 MpPotion = 1;
                 AvailableSkill = new List<bool>();
                 Skill = new List<string>();
-                BurningDmg = 5;
+
+                BurningDmg = 6;
+
+            }
+        }
+
+        public class Musician : Player
+        {
+            public Musician()
+            {
+                Name = "이름";
+                Class = "음악가";
+                Level = 1;
+                Atk = 6;
+                Def = 3;
+                SkillAtk = 6;
+                MaxHp = 70;
+                Hp = 70;
+                MaxMp = 70;
+                Mp = 70;
+                Gold = 1500;
+                Exp = 0;
+                MaxExp = 30;
+                HpPotion = 3;
+                MpPotion = 1;
+                AvailableSkill = new List<bool>();
+                Skill = new List<string>();
             }
         }
 
         struct Monster
         {
-            public string Name { get; }
+            public string Name { get; set; }
             public int Level { set; get; }
             public int Atk { get; set; }
             public int Def { get; set; }
+            public int Dex { get; set; }
             public int Hp { get; set; }
             public int DropExp { get; }
             public int Gold { get; set; }
-            public Monster(string name, int level, int atk, int def, int hp, int dropExp, int gold)
+            public Monster(string name, int level, int atk, int def, int dex, int hp, int dropExp, int gold)
 
             {
                 Name = name;
                 Level = level;
                 Atk = atk;
                 Def = def;
+                Dex = dex;
                 Hp = hp;
                 DropExp = dropExp;
                 Gold = gold;
@@ -110,9 +149,11 @@ namespace Team7SpartaDungeon
             public int Gold { get; set; }
             public int Quantity { get; set; } // 아이템 수량
             public bool IsEquiped { get; set; }
+            public bool IsPurchased { get; set; }
+            public static int shopItemCount;        //상점 쇼핑 카운트 증가 해야 예외처리가 가능해서 추가
             public static int itemCount;
             public static int dropItemCount;
-            public Item(string name, int type, int atk,int skillAtk, int def, int gold, int quantity = 1, bool isEquiped = false)
+            public Item(string name, int type, int atk, int skillAtk, int def, int gold, int quantity = 1, bool isEquiped = false)
             {
                 Name = name;
                 Type = type;
@@ -122,15 +163,52 @@ namespace Team7SpartaDungeon
                 Gold = gold;
                 Quantity = quantity;
                 IsEquiped = isEquiped;
+                IsPurchased = false;
             }
+            public void HighlightPurchased(string s)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(s);
+                Console.ResetColor();
+            }
+            public void ShopList(bool withNumber, int idx = 0)  // 상점 쇼핑할때
+            {
+                Console.Write("-");
 
+                if (withNumber)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.Write("{0}", idx);
+                    Console.ResetColor();
+                }
+                Console.Write(Name);
+                Console.Write("  |  ");
+
+                if (Atk != 0) Console.Write($"Atk {(Atk >= 0 ? " + " : "")}{Atk}");
+                if (Def != 0) Console.Write($"Def {(Def >= 0 ? " + " : "")}{Def}");
+                Console.Write("  |  ");
+                if (IsPurchased)
+                {
+                    HighlightPurchased("구매완료");
+                }
+                if (!IsPurchased)
+                {
+                    Console.WriteLine(Gold + "G");
+                }
+
+
+            }
             public void PlayerInventoryList(bool withNumber, int idx = 0)
             {
+
                 Console.Write("-");
                 if (withNumber)
                 {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
                     Console.Write("{0}", idx);
+                    Console.ResetColor();
                 }
+
                 if (IsEquiped)
                 {
                     Console.Write("[");
@@ -141,38 +219,66 @@ namespace Team7SpartaDungeon
                 }
                 Console.Write(Name);
                 Console.Write("  |  ");
+                Console.Write($"ATk: {Atk}");
+                Console.Write("  |  ");
+                Console.Write($"Def: {Def}");
+                Console.Write("  |  ");
+                Console.WriteLine(Quantity + "개");
+            }
+            public void SellItemList(bool withNumber, int idx)
+            {
+                if (withNumber)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.Write("{0}", idx);
+                    Console.ResetColor();
+                }
+                Console.Write(Name);
+                Console.Write("  |  ");
+                Console.Write((int)Gold * 0.85f + "G");
+                Console.Write("  |  ");
+                Console.Write($"ATk: {Atk}");
+                Console.Write("  |  ");
+                Console.Write($"Def: {Def}");
+                Console.Write("  |  ");
                 Console.WriteLine($"{Quantity}개");
-
             }
         }
-
-
 
         //----- 메인 -----------------------------------------------------------------------------------------------------------------------
         static void Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8; // 아스키 특수문자 호환용
             Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
+            SoundPlayer player = new SoundPlayer(@"C:\bgm.wav"); // C드라이브 bgm.wav 재생 
+            player.PlayLooping(); // bgm 루프
+            PrintStartLogo();
+           
+            WarriorIntroduce();
+            WizardIntroduce();
+            MusicianIntroduce();
             SpartaDungeon sd = new SpartaDungeon();
             sd.PlayGame();
+            Console.Beep();
         }
-        //----------------------------------------------------------------------------------------------------------------------------------
         public class SpartaDungeon
         {
             static int dungeonFloor = 0;       // 던전 층수
-
-
-
-            // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
+                                               // 플레이어, 몬스터, 몬스터 리스트 dungeon 생성
             Player player = new Player();
-            Monster minion = new Monster("미니언", 2, 10, 0, 15, 20, 300);
-            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 25, 80, 800);
-            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 50, 500);
-            Monster Hansole = new Monster("이한솔매니저님", 5, 20, 0, 30, 100, 1000);
+            Monster minion = new Monster("미니언", 2, 10, 0, 10, 15, 20, 300);
+            Monster siegeMinion = new Monster("대포미니언", 5, 20, 0, 10, 25, 80, 800);
+            Monster voidBug = new Monster("공허충", 3, 15, 0, 10, 10, 50, 500);
+            Monster Hansole = new Monster("이한솔매니저님", 5, 20, 0, 10, 30, 100, 1000);
 
             List<Monster> dungeon = new List<Monster>();
             List<Item> items = new List<Item>(); // 아이템 리스트 초기화
             List<Item> haveItem = new List<Item>();
             List<Item> dropItem = new List<Item>();
+            List<Item> shopItem = new List<Item>();
+            List<Item> hands = new List<Item>(); //장착부위 - 손
+            List<Item> body = new List<Item>();  //장착부위 - 몸통
+
 
             public int ChoiceInput(int fst, int last) // 선택지 입력 메서드
             {
@@ -189,19 +295,73 @@ namespace Team7SpartaDungeon
                 }
                 return choice;
             }
-            public void ItemTable() // 아이템 리스트 보관용 메서드
+
+            public void ShopItemTable()  //상점 아이템
             {
-                items.Add(new Item("낡은 검", 0, 3,0, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
-                items.Add(new Item("보통 검", 0, 7,0, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
-                items.Add(new Item("낡은 갑옷", 1, 0,0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
-                items.Add(new Item("보통 갑옷", 1, 0, 0,15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
-                items.Add(new Item("잡동사니", 2, 0,0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
+                shopItem.Add(new Item("[상점] 빛을 잃은 검", 0, 10, 0, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
+                shopItem.Add(new Item("[상점] 빛나는 검", 0, 7, 0, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
+                shopItem.Add(new Item("[상점] 빛을 잃은 갑옷", 1, 0, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
+                shopItem.Add(new Item("[상점] 빛나는 갑옷", 1, 0, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
+
+            }
+
+            public void ItemTable() // 아이템 리스트 보관용 메서드
+                                    // 아이템 리스트 보관용
+            {
+                items.Add(new Item("낡은 검", 0, 3, 0, 0, 500));   // 무기, 공격력 3, 방어력 0, 가격 500
+                items.Add(new Item("보통 검", 0, 7, 0, 0, 1000));  // 무기, 공격력 7, 방어력 0, 가격 1000
+                items.Add(new Item("낡은 갑옷", 1, 0, 0, 7, 800));  // 방어구, 공격력 0, 방어력 7, 가격 800
+                items.Add(new Item("보통 갑옷", 1, 0, 0, 15, 1300)); // 방어구, 공격력 0, 방어력 15, 가격 1300
+                items.Add(new Item("잡동사니", 2, 0, 0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
+            }
+
+            public void PlayStartLogo2() // 직업 선택
+            {
+                Console.Clear();
+                Console.WriteLine("");
+                Console.WriteLine("⠀⠀⠀Warrior ⣠⣴⣶⣶⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                  ⠀⠀⠀⠀⠀⠀Musician");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⢀⠀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⢀⣀⣸⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠢⠀⠀⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⣀⡠⠔⠋⠉⠉⠉⠉⠒⢄⠀");
+                Console.WriteLine("⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀     ⠀⠀⠀⠀Wizard⠀⠀⠀⠀⢡⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠴⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢇");
+                Console.WriteLine("⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠤⠒⠒⠒⠉⠉⡗⠗⠢⠤⣀⠀⠀⠀⠀⠀⠀⠀⡔⠁⠀⠀⠀⠀⠀⠀⠀⣀⠤⠤⢄⣀⠀⠀⠘⡆");
+                Console.WriteLine("⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠙⠢⡀⠀⠀⠀⡞⠀⠀⠀⠀⢀⡠⠤⠄⠎⠀⠀⠀⠀⠈⠑⡄⠀");
+                Console.WriteLine("⠀⠘⣿⣿⣿⣿⣿⣿⣿⠛⠛⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠣⡄⠀⡇⠀⠀⢀⠔⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⠀⠸⠄");
+                Console.WriteLine("⠀⠀⠘⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀⠀⠉⠛⠿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⡜⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⣳⠂⢀⠏⠀⡠⠀⠀⢄⠀⠀⠀⢠⠊⠀⠃⢸⠀⠀⠀⠈⠓");
+                Console.WriteLine("⠀⠀⠀⠘⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢻⠻⢿⣿⠀⠀⠀⠀⠀⠀⠀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣷⡀⢸⡀⠀⠃⠀⡀⠀⠃⠀⠀⣣⡖⠀⠀⢸⠀⠀⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠠⠚⠛⠿⣿⡇⠐⠉⠉⢒⣄⡀⠀⢀⣴⣧⢸⠀⠀⠉⠀⠀⠀⠀⠀⠀⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⢸⠃⠀⠀⠈⠘⠃⠀⢀⣀⣁⣀⠀⠀⠛⠲⡄⠀⠀⠀⠂");
+                Console.WriteLine("⠀⠀⠀⠐⡄⠀⠀⠀⠁⠀⠀⠨⠻⠿⠃⠀⠀⠨⡁⢸⠀⠀⠀⠀⠀⠀⠀⠀⢀⠃⠀⠀⠀⢀⡤⠶⠒⠲⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡎⢆⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⣆⠀⠀⢸⠀⢀⡤⠃⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠈⠢⢀⣀⠀⠀⠀⠀⠀⠀⠀⢄⠤⠤⠂⠀⠱⣄⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠚⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠐⠋⠈⠉⠃⠀⠀⠀⠀⠀⠀⠀⡇⠀⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⡇⠀⠰⣼⠤⠎⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡪⠃⠀⠀⠀⠀⠀⠈⡀⠀⠀⠀⠀⠀⠀⢀⠤⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠃⠀⡇⡀⠀⠀⠀⠘⢿⣿⣿⣿⠟⠀⢀⠜⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⢆⠀⠀⠀⠒⠉⠉⠉⠐⠒⠀⠒⠁⡀⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⡎⠎⣹⣷⠀⠀⠀⠀⠀⠀⡰⣮⡉⠓⡄⠀⠀⠀⠀⠀⠀⡎⠒⠒⠛⠄⣰⣀⣀⡤⠤⡗⠒⢲⣶⣏");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠇⠀⠀⠀⠀⠀⠀⠀⠀⠳⡀⠀⠀⠀⠀⡇⢿⣿⣿⠖⠒⠤⢄⠀⢰⣥⣿⡿⠀⡀⠀⠀⠀⠀⠀⡼⠀⠀⠀⠀⡠⣿⣿⣿⣧⣴⣷⣶⣿⣿⣷⡈⠂⢄⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠡⠀⠀⠀⠀⠀⠀⠀⠀⠀⠜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢈⠶⠶⠟⠃⠘⠛⢻⠉⠀⠀⠀⠀⢳⠘⠿⠿⠔⠺⠛⠽⠟⠒⢂⠜⠀⠀⠀⢀⠊⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠉⠄⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢀⠀⠤⠰⠕⢄⠀⠀⠀⠀⢀⡤⣊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⠀⠀⠀⠀⠀⠀⠘⡄⠀⠀⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡄⠀⠀⡠⠁⢠⣿⣿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠈⠂");
+                Console.WriteLine("⠀⠀⠀⠀⡠⠒⠉⠀⠀⠀⠀⡆⠀⢂⠀⠀⠀⡌⡄⠰⠈⠑⠢⢀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠈⠓⠒⠒⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⢠⠁⠀⢸⠏⠀⢀⡾⠛⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⢀");
+                Console.WriteLine("⠀⠀⠀⡘⠀⠀⠀⠀⠀⠀⠀⢰⠀⠀⠑⡀⠀⠇⠀⠀⠀⠀⠀⠀⠡⡀⠀⠀⠀⠀⠀⠱⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⡨⠀⠀⠆⠀⣠⠋⠀⢀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠁⠀");
+                Console.WriteLine("⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠈⣄⠊⠉⠚⢆⡐⠀⠶⠀⠀⠀⠀⠀⠑⡄⠀⠀⠀⠀⠀⠈⠢⢤⣀⣀⣤⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⠖⠁⠎⠀⠀⢸⣀⡀⠁⢀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀");
+                Console.WriteLine("⠀⠀⡐⠁⠀⠀⠀⠀⠀⠀⠀⠀⢻⠀⠀⠀⠈⠃⠀⠀⠐⠒⠒⠠⡀⢸⠘⠢⡀⠀⠀⠀⠀⠀⠀⠀⢀⠇⡹⠉⠣⡤⣆⣀⣠⠤⡶⢲⠖⢖⠊⠉⠀⠀⠀⠀⠣⠤⣺⠉⠀⢈⠆⠁⠀⢹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀");
+                Console.WriteLine("⠀⠰⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠀⠀⠀⠀⠀⠀⠀⠈⠢⠀⠀⠈⢺⡄⠀⢡⠀⠀⠀⠀⠀⠀⢀⠆⣴⠃⠀⡘⠀⠀⠀⢠⠊⠀⠘⡀⠈⠻⠲⠤⠤⠤⠤⠒⠉⠈⡗⠒⠉⠀⠢⡤⠊⢻⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⢸⠀⠀⠀⠀⢀⡴⠋⡰⠉⡄⠀⠀⠀⠀⡠⠁⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢄⣀⣀⣠⣀⣠⣾⣿⣿⣿⣿⣿⣿⠟⡇⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠓⠄⡐⠒⠺⣀⠀⣀⠴⠊⠀⢀⠇⠀⠈⠢⠤⠄⠊⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⢻⠛⠻⠛⠛⠋⠉⠉⠀⡇⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡈⠀⠁⢰⠀⠀⢠⠀⠷⡀⠀⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠃⡸⠀⠀⠀⠀⠀⠀⢰⠀⠧⣀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢈⠘⢄⠀⠈⢄⠐⠁⠀⢀⠇⠀⠀⢠⢷⠒⠀⠉⠉⠀⠒⠢⢄⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀⢀⡀⠀⠀⠀⠀⢀⡠⠊⡔⠉⠀⠀⡠⠀⠀⠀⠀⢘⠀⠀⠀⠈⠐⠄⠀");
+                Console.WriteLine("\r\n⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢄⠀⢁⡹⠀⠀⢀⣠⠎⠀⢀⡴⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠇⠀⠀⠀⠀⠙⡒⠒⠒⠒⠉⠀⠀⢄⣀⠠⣒⣀⠀⠀⠀⠀⠈⠢⣀⡀");
+                Console.WriteLine("⠀⠈⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠸⣍⠉⠉⠁⠀⢀⣠⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⢀⣠⠤⠂⠉⠀⠀⠉⢢⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠁⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀⠀⠀⢱⠤⠔⠂⠉⠁⠀⠀⠀⠀⠀⠀⠀⡸⠀");
+                Console.WriteLine("");
+                ShowHighlightText("==================================================================================================================");
+                Console.WriteLine("");
+                ShowHighlightText("                                    <<    7조의 대모험이⠀시작됩니다 !⠀  >>");
+                Console.WriteLine("");
+                Console.WriteLine("");
+                Console.WriteLine("                                                                                                 Press Any Key");                                                                                        
+                ShowHighlightText("=================================================================================================================");
+                Console.ReadKey();
             }
 
             public void PlayGame() // 게임 시작 메서드
             {
-
-
+                ItemTable();
                 dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
@@ -212,36 +372,48 @@ namespace Team7SpartaDungeon
                 dungeon.Add(siegeMinion);
                 dungeon.Add(voidBug);
 
+                ShopItemTable();
 
-                ItemTable(); // 아이템 리스트 보관용 메서드 초기화
-
-
-                Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사");
-                switch (ChoiceInput(1, 2)) // 직업 선택
+                Console.Clear();
+                PlayStartLogo2(); // 직업 선택씬
+                Console.WriteLine("");
+                ShowHighlightText("                                           직업을  선택 해주세요!");
+                Console.WriteLine("");
+                Console.WriteLine("                    1. 전사                      2. 마법사                   3. 음악가       ");
+                switch (ChoiceInput(1, 3)) // 직업 선택
                 {
                     case 1:
                         player = new Warrior();
                         player.Skill.Add("알파 스트라이크 - MP 10\n   공격력 * 2 로 하나의 적을 공격합니다."); // 전사 1번 스킬 추가
                         player.AvailableSkill.Add(true);
                         player.Skill.Add("더블 스트라이크 - MP 15\n   공격력 * 1.5 로 2명의 적을 랜덤으로 공격합니다."); // 전사 2번 스킬 추가
-                        player.AvailableSkill.Add(true);
+                        player.AvailableSkill.Add(false);
                         break;
                     case 2:
                         player = new Wizard();
-                        player.Skill.Add("파이어 브레스 - MP 20\n   마법력 * 0.5 로 모든 적을 공격하고, 화상 상태로 만듭니다.(화상 데미지 5 x 4)"); // 마법사 1번 스킬 추가
+
+                        player.Skill.Add("파이어 브레스 - MP 20\n   마법력 * 0.4 로 모든 적을 공격하고, 화상 상태로 만듭니다.(화상 데미지 6 x 4)"); // 마법사 1번 스킬 추가
                         player.AvailableSkill.Add(true);
                         player.Skill.Add("아이스 스피어 - MP 10\n   마법력 + 10 으로 가장 앞에있는 적을 공격한다. 만약 적이 사망할 경우, 초과한 데미지만큼 다음 적이 데미지를 받는다."); // 마법사 2번스킬 추가
+                        player.AvailableSkill.Add(false);
+                        player.Skill.Add("메디테이션 - MP +10\n   일시적으로 마법력 * 0.5 의 방어력을 얻고 명상에 빠진다.");
+
+                        player.AvailableSkill.Add(true);
+                        break;
+                    case 3:
+                        player = new Musician();
+                        player.Skill.Add("타임 코스모스 \"깐따삐아\" ! - MP 70\n  모든 마나를 소모하고 시간을 게임 시작 전으로 되돌립니다.");
                         player.AvailableSkill.Add(true);
                         break;
                 }
-                Console.WriteLine("원하시는 이름을 설정해주세요.");
+                ShowHighlightText(" 원하시는 이름을 설정해주세요! \n");
                 player.Name = Console.ReadLine();    // 플레이어 이름 입력
                 while (true)
                 {
                     Console.Clear();
-                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3.인벤토리");
-                    switch (ChoiceInput(1, 3)) // 최초 선택지
 
+                    Console.WriteLine($" {player.Name} 님 반갑습니다! \n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3. 인벤토리\n4. 상점\n5. 저장 / 불러오기\n");
+                    switch (ChoiceInput(1, 5)) // 최초 선택지
                     {
                         case 1:
                             Status();
@@ -250,14 +422,17 @@ namespace Team7SpartaDungeon
                             BattleStart();
                             break;
                         case 3:
-                            InventoryMenu(); // 아이템 획득 테스트 때문에 임시로 추가
+                            InventoryMenu();
+                            break;
+                        case 4:
+                            StoreMenu();
+                            break;
+                        case 5:
+                            SaveGameMenu(); // 저장 및 불러오기 메뉴
                             break;
                     }
                 }
             }
-
-
-
 
             //---------------------레벨업
             public void LevelUp()
@@ -296,50 +471,58 @@ namespace Team7SpartaDungeon
                     player.Hp = player.MaxHp; //레벨업 시 회복
                     player.Mp = player.MaxMp;
 
+
+                    if (!(player is Musician) && 3 == player.Level)
+                    {
+                        player.AvailableSkill[1] = true;
+                        if (player is Warrior) Console.WriteLine("\n\n스킬 \"더블 스트라이크\"를 사용할 수 있습니다.");
+                        if (player is Wizard) Console.WriteLine("\n\n스킬 \"아이스 스피어\"를 사용할 수 있습니다");
+                    }
+
                     Console.ReadKey();
 
                 }
             }
-            //public int getBonusAtk()
-            //{
-            //    int sum = 0;
-            //    for (int i = 0; i < haveItem.Count; i++)
-            //    {
-            //        if (haveItem[i].IsEquiped) sum += haveItem[i].Atk;
-            //    }
-            //    return sum;
-            //}
-            //public int getBonusDef()
-            //{
-            //    int sum = 0;
-            //    for (int i = 0; i < haveItem.Count; i++)
-            //    {
-            //        if (haveItem[i].IsEquiped) sum += haveItem[i].Def;
-            //    }
-            //    return sum;
-            //}
-            //public int getBonusSkillAtk()
-            //{
-            //    int sum = 0;
-            //    for (int i = 0; i < haveItem.Count; i++)
-            //    {
-            //        if (haveItem[i].IsEquiped) sum += haveItem[i].SkillAtk;
-            //    }
-            //    return sum;
-            //}
-
             public void Status() // 1. 상태 보기
             {
-                //float bonusAtk = getBonusAtk();
-                //int bonusDef = getBonusDef();
-                //int bonusSkillAtk = getBonusSkillAtk();
                 Console.Clear();
                 Console.WriteLine($"캐릭터의 정보가 표시됩니다.\n\n" +
                                   $" 이름   : {player.Name}\n" +
-                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n 마법력 : {player.SkillAtk}\n" +
+                                  $" 레벨   : {player.Level}\n 직업   : {player.Class}\n 공격력 : {player.Atk}\n 방어력 : {player.Def}\n 마법력 : {player.SkillAtk}\n 민첩성 : {player.Dex}\n" +
                                   $" 체 력  : {player.Hp}/{player.MaxHp}\n 마 나  : {player.Mp}/{player.MaxMp}\n Gold   : {player.Gold} G\n 경험치 : {player.Exp} / {player.MaxExp}\n\n" +
                                   $"Enter. 나가기");
                 Console.ReadLine();
+            }
+            public void StoreMenu()   //상점페이지
+            {
+                Console.Clear();
+                Console.WriteLine("■ 상 점 ■");
+                Console.WriteLine("필요한 아이템을 얻을 수 있는 상점입니다.");
+                Console.WriteLine("");
+                Console.WriteLine("[보유 골드]");
+                Console.WriteLine(player.Gold + "G");
+                Console.WriteLine("");
+                Console.WriteLine("");
+                Console.WriteLine("[아이템 목록]");
+                for (int i = 0; i < 4; i++)
+                {
+                    shopItem[i].ShopList(false, 0);
+                }
+                Console.WriteLine("");
+                Console.WriteLine("0. 나가기");
+                Console.WriteLine("1. 아이템 구매");
+                Console.WriteLine("2. 아이템 판매");
+                switch (ChoiceInput(0, 2))
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        Shop();
+                        break;
+                    case 2:
+                        SellMenu();
+                        break;
+                }
             }
 
             public void InventoryMenu()  // 인벤토리
@@ -349,15 +532,20 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("아이템을 관리할 수 있습니다.\n \n [아이템 목록]");
                 if (haveItem.Count <= 0)
                 {
-                    Console.WriteLine("가진 아이템이 없습니다.");
+
+                    Console.WriteLine(" --현재 보유한 아이템이 없습니다--");
+
                 }
                 else
                 {
-                    for (int i = 0; i < Item.itemCount; i++)
+                    for (int i = 0; i < haveItem.Count; i++)
                     {
                         haveItem[i].PlayerInventoryList(false, 0);
                     }
                 }
+
+
+                Console.WriteLine("");
                 Console.WriteLine("1. 장착관리 \n0. 뒤로가기");
                 switch (ChoiceInput(0, 1))
                 {
@@ -374,7 +562,8 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("장착관리 \n보유 중인 아이템을 관리할 수 있습니다.");
                 Console.WriteLine("");
                 Console.WriteLine("[아이템 목록]");
-                if (haveItem.Count <= 0)
+
+                if (haveItem.Count <= 0 && Item.shopItemCount <= 0)
                 {
                     Console.WriteLine("가진 아이템이 없습니다.");
                 }
@@ -384,14 +573,16 @@ namespace Team7SpartaDungeon
                     {
                         haveItem[i].PlayerInventoryList(true, i + 1);
                     }
-                }
-              
 
+                }
+                Console.WriteLine("");
+                Console.WriteLine("장착하고 싶은 아이템 숫자를 선택하세요");
                 Console.WriteLine("\n0.돌아가기");
                 int keyInput = ChoiceInput(0, haveItem.Count);
                 switch (keyInput)
                 {
                     case 0:
+                        InventoryMenu();
                         break;
                     default:
                         ItemEpuipToggle(keyInput - 1);
@@ -401,12 +592,115 @@ namespace Team7SpartaDungeon
 
             }
 
-            
-
-            private void ItemEpuipToggle(int idx)
+            public void Shop()
             {
-                haveItem[idx].IsEquiped = !haveItem[idx].IsEquiped;
+                Console.Clear();
+                Console.WriteLine("■ 상 점 - 구매하기 ■");
+                Console.WriteLine("필요한 아이템을 구매 할 수 있습니다.\n");
+                Console.WriteLine("");
+                Console.WriteLine("[보유 골드]");
+                Console.WriteLine(player.Gold + "G");
+                Console.WriteLine("");
+                Console.WriteLine("[아이템 목록]");
+                Console.WriteLine("");
+                for (int i = 0; i < 4; i++)
+                {
+                    shopItem[i].ShopList(true, i + 1);
+                }
+                Console.WriteLine("\n구매하고 싶은 아이템 번호를 입력 해주세요.");
+                Console.WriteLine("0을 입력하면 상점으로 돌아갑니다.");
+                Console.WriteLine("");
 
+                int choice = ChoiceInput(0, 4); // 0 입력 가능
+                if (choice == 0) // 0 입력 시 상점 메뉴로 복귀
+                {
+                    StoreMenu();
+                    return;
+                }
+
+                choice -= 1;
+                Item selectedItem = shopItem[choice];
+                if (selectedItem.IsPurchased)
+                {
+                    Console.WriteLine("이미 구매한 아이템입니다.");
+                }
+                else if (player.Gold >= selectedItem.Gold)
+                {
+                    selectedItem.IsPurchased = true;
+                    haveItem.Add(shopItem[choice]);
+                    player.Gold -= selectedItem.Gold;
+
+
+                    Console.WriteLine($"\n{selectedItem.Name} 구매를 완료했습니다.");
+                    Item.shopItemCount++;
+                    Item.itemCount++;
+
+                }
+                else
+                {
+                    Console.WriteLine("Gold가 부족합니다.");
+                }
+
+                Console.WriteLine("아무 키나 누르면, 상점으로 돌아갑니다.");
+                Console.ReadKey();
+                StoreMenu();
+            }
+
+
+            private void ItemEpuipToggle(int idx) //아이템 장착과 스탯 증감
+            {
+                if (!haveItem[idx].IsEquiped)
+                {
+                    if (haveItem[idx].Type == 0)
+                    {
+                        if (hands.Count == 0)
+                        {
+                            haveItem[idx].IsEquiped = true;
+                            hands.Add(haveItem[idx]);
+                            StatIncrease(idx);
+                        }
+                        else
+                        {
+                            hands[0].IsEquiped = false;
+                            haveItem[idx].IsEquiped = true;
+                            hands.Clear();
+                            hands.Add(haveItem[idx]);
+                            StatIncrease(idx);
+                        }
+                    }
+                    else if (haveItem[idx].Type == 1)
+                    {
+                        if (body.Count == 0)
+                        {
+                            haveItem[idx].IsEquiped = true;
+                            body.Add(haveItem[idx]);
+                            StatIncrease(idx);
+                        }
+                        else
+                        {
+                            body[0].IsEquiped = false;
+                            haveItem[idx].IsEquiped = true;
+                            body.Clear();
+                            body.Add(haveItem[idx]);
+                            StatIncrease(idx);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("장비 아이템이 아닙니다.");
+                    }
+                }
+                else
+                {
+                    haveItem[idx].IsEquiped = false;
+                    StatIncrease(idx);
+                }
+
+
+
+            }
+            private void StatIncrease(int idx)
+            {
                 if (haveItem[idx].IsEquiped)
                 {
                     player.Atk += haveItem[idx].Atk;
@@ -420,8 +714,106 @@ namespace Team7SpartaDungeon
                     player.Def -= haveItem[idx].Def;
                     player.SkillAtk -= haveItem[idx].SkillAtk;
                 }
+            }
+
+            private void SellMenu()
+            {
+
+                Console.Clear();
+                Console.WriteLine("■ 상 점 - 판매하기 ■");
+                Console.WriteLine("어떤 아이템을 판매하시겠습니까?");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(" ※상점에서 구매한 장비는 구매 시의 85% 가격으로 판매가능합니다.");
+                Console.ResetColor();
+                Console.WriteLine("");
+                Console.WriteLine("[보유 골드]");
+                Console.WriteLine(player.Gold + "G");
+                Console.WriteLine("");
+                Console.WriteLine("[판매가능 아이템 목록]");
+                if (haveItem.Count > 0)
+                {
+                    for (int i = 0; i < haveItem.Count; i++)
+                    {
+                        haveItem[i].SellItemList(true, i + 1);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("--판매 가능한 아이템이 없습니다--");
+                }
+                Console.WriteLine("");
+                Console.WriteLine("판매하고 싶은 아이템의 숫자를 입력해주세요");
+                Console.WriteLine("0. 돌아가기");
+                int keyInput = ChoiceInput(0, haveItem.Count);
+                switch (keyInput)
+                {
+                    case 0:
+                        Shop();
+                        break;
+                    default:
+                        ItemSell(keyInput - 1);
+                        SellMenu();
+                        break;
+                }
 
             }
+            private void ItemSell(int Idx)
+            {
+                if (haveItem[Idx].Quantity > 1)
+                {
+                    Console.WriteLine("몇 개를 판매하시겠습니까?");
+                    Console.WriteLine("0. 취소");
+                    int keyInput = ChoiceInput(0, haveItem[Idx].Quantity);
+                    switch (keyInput)
+                    {
+                        case 0:
+                            SellMenu();
+                            break;
+                        default:
+                            {
+                                if (haveItem[Idx].IsEquiped && keyInput >= haveItem[Idx].Quantity)
+                                {
+                                    Console.WriteLine("장비중인 아이템은 팔 수 없습니다.");
+                                    Console.ReadKey();
+                                }
+                                else
+                                {
+                                   
+                                    haveItem[Idx].IsPurchased = false;
+                                    player.Gold += (int)(haveItem[Idx].Gold * 0.85f) * keyInput;
+                                    haveItem[Idx].Quantity -= keyInput;
+                                    if (haveItem[Idx].Quantity <= 0)
+                                    {
+                                        haveItem.Remove(haveItem[Idx]);
+                                        Item.itemCount--;
+                                    }
+                                }
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    if (haveItem[Idx].IsEquiped)
+                    {
+                        Console.WriteLine("장비중인 아이템은 팔 수 없습니다.");
+                        Console.ReadKey();
+
+                    }
+                    else
+                    {
+
+                       
+                        haveItem[Idx].IsPurchased = false;
+                        player.Gold += (int)(haveItem[Idx].Gold * 0.85f);
+                        haveItem.Remove(haveItem[Idx]);
+                        Item.itemCount--;
+                    }
+                }
+
+            }
+
+
 
             public void BattleStart() // 2. 전투 시작
             {
@@ -433,7 +825,7 @@ namespace Team7SpartaDungeon
                 int beforeHp = player.Hp;
                 int beforeMp = player.Mp;
                 int beforeExp = player.Exp;
-                
+
 
                 for (int i = 0; i < r.Next((1 + diff), (5 + diff)); i++)   //난이도에 따른 몹 마릿수 증가
                 {
@@ -479,14 +871,22 @@ namespace Team7SpartaDungeon
                     Console.ResetColor();
                     for (int i = 0; i < monsters.Count; i++)
                     {
-                        if (!(monsterHp[i] <= 0))
-                            Console.WriteLine($"   Lv.{monsters[i].Level} {monsters[i].Name} HP {monsterHp[i]}/{monsters[i].Hp}");
-                        else
+                        if (monsterHp[i] <= 0)
                         {
                             Console.ForegroundColor = ConsoleColor.DarkGray;
                             Console.WriteLine($"   Lv.{monsters[i].Level} {monsters[i].Name} Dead");
                             Console.ResetColor();
                         }
+                        else if (0 < monsterHp[i] && 0 < monsterBurn[i])
+                        {
+                            Console.Write($"   Lv.{monsters[i].Level} {monsters[i].Name} HP {monsterHp[i]}/{monsters[i].Hp}");
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine(" ♨");
+                            Console.ResetColor();
+                        }
+                        else if (0 < monsterHp[i])
+                            Console.WriteLine($"   Lv.{monsters[i].Level} {monsters[i].Name} HP {monsterHp[i]}/{monsters[i].Hp}");
+
                     }
                     Console.WriteLine($"\n\n   [내정보]\n\n   Lv.{player.Level} {player.Name} ({player.Class})\n   HP {player.Hp}/{player.MaxHp}\n   MP {player.Mp}/{player.MaxMp}");
                 }
@@ -599,6 +999,7 @@ namespace Team7SpartaDungeon
                                     player.Mp -= 10;
                                     if (Critical <= 15)
                                     {
+                                        WarriorSkillSceneOne();
                                         monsterHp[atk - 1] -= (int)Math.Ceiling(player.Atk * 3.2f); //  알파 스트라이크 데미지
                                         BattleField();
                                         Console.WriteLine($"\n\n{player.Name} 의 알파 스트라이크!\n");
@@ -606,6 +1007,7 @@ namespace Team7SpartaDungeon
                                     }
                                     else
                                     {
+                                        WarriorSkillSceneOne();
                                         monsterHp[atk - 1] -= (int)Math.Ceiling(player.Atk * 2);
                                         BattleField();
                                         Console.WriteLine($"\n\n{player.Name} 의 알파 스트라이크!\n");
@@ -657,18 +1059,31 @@ namespace Team7SpartaDungeon
                                 player.Mp -= 15;
                                 if (Critical <= 15)
                                 {
+                                    
                                     monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 2.4);
                                     monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 2.4);
+                                    WarriorSkillSceneTwo();
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk1);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 3 + atk2);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]- 치명타!!");
                                     Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]- 치명타!!");
                                 }
                                 else
                                 {
+                                    WarriorSkillSceneTwo();
                                     monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk1);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 3 + atk2);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk1].Level} {monsters[atk1].Name} 을(를) 맞췄습니다. [데미지 : {hp1 - monsterHp[atk1]}]");
                                     Console.WriteLine($"Lv.{monsters[atk2].Level} {monsters[atk2].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk2]}]");
@@ -702,6 +1117,9 @@ namespace Team7SpartaDungeon
                                 {
                                     monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 2.4);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]- 치명타!!");
                                 }
@@ -709,6 +1127,9 @@ namespace Team7SpartaDungeon
                                 {
                                     monsterHp[atk] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     BattleField();
+                                    Console.SetCursorPosition(0, 3 + atk);
+                                    Console.WriteLine($"◈");
+                                    Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 더블 스트라이크!\n");
                                     Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
                                 }
@@ -738,16 +1159,21 @@ namespace Team7SpartaDungeon
                         if (20 <= player.Mp)
                         {
                             player.Mp -= 20;
-                            for (int i = 0; i < monsters.Count; i++)
+                            WizardSkillSceneOne();
+                            for (int i = monsters.Count - 1; 0 <= i; i--)
+
                             {
                                 int bh = monsterHp[i];
                                 if (0 < monsterHp[i])
                                 {
-                                    monsterHp[i] -= (int)Math.Ceiling(player.SkillAtk * 0.5f);
+
+                                    monsterHp[i] -= (int)Math.Ceiling(player.SkillAtk * 0.4f);
                                     monsterBurn[i] = 4;
                                     BattleField();
                                     Console.SetCursorPosition(0, 3 + i);
-                                    Console.WriteLine($"◎");
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"◎▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒·");
+                                    Console.ResetColor();
                                     Console.SetCursorPosition(0, 11 + monsters.Count);
                                     Console.WriteLine($"\n\n{player.Name} 의 파이어 브레스!\n");
                                     Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[i]}]");
@@ -775,6 +1201,7 @@ namespace Team7SpartaDungeon
                     {
                         if (10 <= player.Mp)
                         {
+                            WizardSkillSceneTwo();
                             player.Mp -= 10;
                             if (2 <= CheckMonsters())
                             {
@@ -796,6 +1223,20 @@ namespace Team7SpartaDungeon
                                 if (monsterHp[atk] < 0)
                                     monsterHp[atk - next] += monsterHp[atk];
                                 BattleField();
+
+
+                                Console.SetCursorPosition(0, 3 + atk);
+                                if (monsterHp[atk] < 0) Console.SetCursorPosition(0, 3 + atk - next);
+                                Console.ForegroundColor = ConsoleColor.Blue;
+                                Console.Write($"◎");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒▲▒");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒§▒");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒§▒");
+                                Console.ResetColor();
+                                Console.SetCursorPosition(0, 11 + monsters.Count);
                                 Console.WriteLine($"\n\n{player.Name} 의 아이스 스피어!\n");
                                 if (monsterHp[atk] < 0)
                                     Console.WriteLine($"Lv.{monsters[atk - next].Level} {monsters[atk - next].Name} 을(를) 맞췄습니다. [데미지 : {hp2 - monsterHp[atk - next]}]");
@@ -819,6 +1260,18 @@ namespace Team7SpartaDungeon
                                 int bh = monsterHp[atk];
                                 monsterHp[atk] -= player.SkillAtk + 10;
                                 BattleField();
+                                Console.SetCursorPosition(0, 3 + atk);
+                                Console.ForegroundColor = ConsoleColor.Blue;
+                                Console.Write($"◎");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒▲▒");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒§▒");
+                                Console.CursorLeft = 12;
+                                Console.WriteLine("▒§▒");
+                                Console.ResetColor();
+                                Console.SetCursorPosition(0, 11 + monsters.Count);
+                                Console.WriteLine($"\n\n{player.Name} 의 아이스 스피어!\n");
                                 Console.WriteLine($"Lv.{monsters[atk].Level} {monsters[atk].Name} 을(를) 맞췄습니다. [데미지 : {bh - monsterHp[atk]}]");
                                 if (monsterHp[atk] <= 0)
                                     Console.WriteLine($"\nLv.{monsters[atk].Level} {monsters[atk].Name}\nHP {bh} -> Dead");
@@ -838,8 +1291,47 @@ namespace Team7SpartaDungeon
                         Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
                         Console.ReadLine();
                     }
-                }
+                    if (player is Wizard && use == 3 && player.AvailableSkill[use - 1]) // 마법사 3번 스킬 // 메디테이션 - MP +10, 일시적으로 마법력 * 0.5 의 방어력을 얻고 명상에 빠진다.
+                    {
+                        WizardSkillSceneOne();
+                        int bd = player.Def;
+                        player.Def += (int)Math.Ceiling(player.SkillAtk * 0.5);
+                        BattleField();
+                        Console.WriteLine($"\n{player.Name}의 방어력이 {player.Def - bd} 증가하였습니다. [방어력 : {player.Def}]\n\nEnter. 다음");
+                        Console.ReadLine();
+                        EnemyFrontPhase();
+                        player.Def = bd;
+                        player.Mp += 10;
+                        if (player.MaxMp < player.Mp) player.Mp = player.MaxMp;
+                    }
+                    else if (player is Wizard && use == 3)
+                    {
+                        Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
+                        Console.ReadLine();
+                    }
+                    //---------------- 음악가 스킬 -----------------------------------------------------------------------------------------------------------------------------------------------
+                    if (player is Musician && use == 1 && player.AvailableSkill[use - 1]) // 음악가 1번 스킬 - 타임 코스모스, 그냥 냅다 게임 시작 페이지로 돌아갑니다.
+                    {
+                        if (50 <= player.Mp)
+                        {
+                            player.Mp -= 50;
+                            MusicionSkillScene();
+                            PlayGame(); // 다시 게임 시작
+                            if (CheckMonsters() != 0) EnemyFrontPhase();
+                        }
+                        else
+                        {
+                            Console.WriteLine("MP 가 부족합니다.\n\nEnter. 다음");
+                            Console.ReadLine();
+                        }
+                    }
+                    else if (player is Musician && use == 1)
+                    {
+                        Console.WriteLine("사용할 수 없는 스킬입니다.\n\nEnter. 다음");
+                        Console.ReadLine();
+                    }
 
+                }
                 void EnemyFrontPhase()
                 {
                     for (int i = 0; i < monsters.Count; i++)
@@ -851,7 +1343,10 @@ namespace Team7SpartaDungeon
                             monsterBurn[i]--;
                             BattleField();
                             Console.SetCursorPosition(0, 3 + i);
-                            Console.WriteLine($"♨");
+
+
+                            Console.WriteLine($"▷");
+
                             Console.SetCursorPosition(0, 11 + monsters.Count);
                             Console.WriteLine($"\nLv.{monsters[i].Level} {monsters[i].Name} 이(가) 화상으로 데미지를 받았다. [데미지 : {bh - monsterHp[i]}]");
                             if (monsterHp[i] <= 0)
@@ -867,19 +1362,40 @@ namespace Team7SpartaDungeon
                 {
                     for (int i = 0; i < monsters.Count; i++)
                     {
+                        BattleField();
                         int befHp = player.Hp;
                         int damage = monsters[i].Atk - player.Def;    // 몬스터 데미지
-                        if (damage < 0) damage = 0;
+                        if (damage < 1) damage = 1;
                         if (0 < monsterHp[i])
                         {
-
-                            player.Hp -= damage;
-                            BattleField();
                             Console.SetCursorPosition(0, 3 + i);
                             Console.WriteLine($"▶");
                             Console.SetCursorPosition(0, 11 + monsters.Count);
-                            Console.WriteLine("\n");
-                            Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 의 공격!\n{player.Name} 을(를) 맞췄습니다. [데미지 : {befHp - player.Hp}]\n");
+                            Console.WriteLine($"Lv.{monsters[i].Level} {monsters[i].Name} 의 공격!\n");
+                            Console.WriteLine("1. 방어하기\n2. 피하기");
+                            switch (ChoiceInput(1, 2))
+                            {
+                                case 1:
+                                    player.Hp -= damage;
+                                    BattleField();
+                                    Console.WriteLine($"\n{player.Name} 을(를) 맞췄습니다. [데미지 : {befHp - player.Hp}]\n");
+                                    break;
+                                case 2:
+                                    int Dodge = r.Next(0, player.Dex + monsters[i].Dex);
+                                    if (Dodge < player.Dex)
+                                    {
+                                        BattleField();
+                                        Console.WriteLine($"\n{player.Name} 이(가) 공격을 피했습니다!");
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        player.Hp -= monsters[i].Atk;
+                                        BattleField();
+                                        Console.WriteLine($"\n{player.Name} 을(를) 맞췄습니다. [데미지 : {befHp - player.Hp}]\n");
+                                        break;
+                                    }
+                            }
                             if (player.Hp <= 0)
                             {
                                 Console.WriteLine($"Lv.{player.Level} {player.Name}\nHP {befHp} -> Dead\n\nEnter. 다음");
@@ -945,13 +1461,11 @@ namespace Team7SpartaDungeon
                     Console.ReadKey();
                     LevelUp();
                     GetRewards();
-                    
+
                     if (dungeonFloor % 3 == 0)                                          // 3층마다 이한솔매니저님 몹 추가
                     {
                         dungeon.Add(Hansole);
                     }
-                   
-                    
                     Console.WriteLine("Enter. 다음");
                     Console.ReadLine();
 
@@ -980,33 +1494,40 @@ namespace Team7SpartaDungeon
                 }
                 void GetRewards() // 던전 보상 메서드
                 {
-                    Console.Clear();
-                    Random r = new Random(); // 랜덤 객체 생성, 랜덤 숫자를 생성하려고
-                    int totalGold = 0; //획득 골드 표시하려고, 일단 초기화
 
-                    for (int i = 0; i < monsters.Count; i++) // 몬스터 리스트 수 만큼 반복
+                    Console.Clear();
+                    Random r = new Random();
+                    int totalGold = 0;
+
+                    dropItem.Clear();
+
+                    for (int i = 0; i < monsters.Count; i++)
                     {
-                        totalGold += monsters[i].Gold;  // 몬스터의 골드를 획득 골드에 추가
-                        if (items.Count > 0) // 아이템 리스트에 아이템이 있는지 확인
+                        totalGold += monsters[i].Gold;
+                        if (items.Count > 0)
                         {
                             int itemIdx = r.Next(items.Count); // 아이템 리스트 내에서 랜덤한 인덱스 선택
-                            dropItem.Add(items[itemIdx]);
-                            Item.dropItemCount += itemIdx;
+                            Item newItem = items[itemIdx];
 
-                            //
-                            var existingItem = haveItem.FirstOrDefault(it => it.Name == dropItem[i].Name);
-                            if (existingItem != null)
+                            var existingDropItem = dropItem.FirstOrDefault(item => item.Name == newItem.Name);
+                            if (existingDropItem != null)
                             {
-                                existingItem.Quantity++; // 이미 있는 아이템이면 수량 증가
+                                existingDropItem.Quantity++; // dropItem 리스트에 이미 존재하는 경우 수량 증가
                             }
                             else
                             {
+                                dropItem.Add(new Item(newItem.Name, newItem.Type, newItem.Atk, newItem.SkillAtk, newItem.Def, newItem.Gold, 1, false)); // 새 아이템 추가
+                            }
 
-                                haveItem.Add(dropItem[i]); // 새 아이템 추가
+                            var existingHaveItem = haveItem.FirstOrDefault(item => item.Name == newItem.Name);
+                            if (existingHaveItem != null)
+                            {
+                                existingHaveItem.Quantity++; // haveItem 리스트에 이미 존재하는 경우 수량 증가
+                            }
+                            else
+                            {
+                                haveItem.Add(new Item(newItem.Name, newItem.Type, newItem.Atk, newItem.SkillAtk, newItem.Def, newItem.Gold, 1, false)); // 새 아이템 추가
                                 Item.itemCount++;
-
-
-
                             }
                         }
                     }
@@ -1018,15 +1539,17 @@ namespace Team7SpartaDungeon
                     Console.ResetColor();
                     player.Gold += totalGold;
                     Console.Write(" Gold\n");
-                    foreach (var item in haveItem) // 아이템의 이름과 수량을 순회
+
+                    foreach (var item in dropItem) // 
                     {
                         Console.WriteLine("");
                         Console.Write($"{item.Name} - "); // 아이템 이름
                         Console.ForegroundColor = ConsoleColor.Magenta;
-                        Console.Write(item.Quantity); // 아이템 수량
+                        Console.Write(item.Quantity); // dropItem 수
                         Console.ResetColor();
                         Console.Write(" 개\n");
                     }
+
                 }
                 void HpRecovery()
                 {
@@ -1165,7 +1688,569 @@ namespace Team7SpartaDungeon
                     }
                 }
             }
+            void SaveGameMenu()
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("[ 게임 저장 / 불러오기 ]\n");
+                Console.ResetColor();
+                Console.WriteLine("게임을 저장하거나 불러올 수 있습니다.\n");
+                Console.WriteLine("1. 게임 저장하기");
+                Console.WriteLine("2. 게임 불러오기");
+                Console.WriteLine("0. 돌아가기\n");
 
+                switch (ChoiceInput(0, 2))
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        SaveGame("gameData.json");
+                        Console.WriteLine("게임이 저장되었습니다! 아무 키나 누르면 돌아갑니다.");
+                        Console.ReadKey();
+                        break;
+                    case 2:
+                        LoadGame("gameData.json");
+                        Console.WriteLine("게임을 불러왔습니다! 아무 키나 누르면 돌아갑니다.");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+            void SaveGame(string filePath) // 게임 저장
+            {
+                var gameData = new // 저장용 객체
+                {
+                    Player = player,
+                    HaveItem = haveItem.ToList(), // 내가 가지고 있는 아이템 리스트화
+                    DungeonFloor = dungeonFloor,
+                    Dungeon = dungeon
+                };
+                string json = JsonConvert.SerializeObject(gameData, Formatting.Indented);
+                File.WriteAllText(filePath, json);
+            }
+            public void LoadGame(string filePath) // 게임 불러오기
+            {
+                string json = File.ReadAllText(filePath);
+
+                var gameData = JsonConvert.DeserializeObject<dynamic>(json);
+
+                var haveItemArray = gameData.HaveItem;
+
+                var classData = gameData.Player;
+                switch (classData.Class.ToString()) // 직업 Class 문자열 참조해서 플레이어 캐릭터 스탯 로드
+                {
+                    case "전사":
+                        player = classData.ToObject<Warrior>();
+                        break;
+                    case "마법사":
+                        player = classData.ToObject<Wizard>();
+                        break;
+                    case "음악가":
+                        player = classData.ToObject<Musician>();
+                        break;
+                }
+                haveItem = haveItemArray.ToObject<List<Item>>();
+                Item.itemCount = haveItem.Count;
+
+                dungeonFloor = gameData.DungeonFloor;
+                Monster[] dungeonArray = gameData.Dungeon.ToObject<Monster[]>();
+                dungeon = new List<Monster>(dungeonArray);
+            }
         }
+        private static void ShowHighlightText(string text) // 첫 줄 색 변경 함수, 녹색
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(text);
+            Console.ResetColor();
+        }
+
+        private static void PrintStartLogo() // 게임 스타트 로고
+        {
+            Console.Clear();
+            ShowHighlightText("=====================================================================================================================");
+            Console.WriteLine("   ");
+            Console.WriteLine("                         ███████╗     ██████╗ ██████╗  ██████╗ ██╗   ██╗██████╗ ███████");
+            Console.WriteLine("                         ╚════██║    ██╔════╝ ██╔══██╗██╔═══██╗██║   ██║██╔══██╗██╔════╝  ");
+            Console.WriteLine("                             ██╔╝    ██║  ███╗██████╔╝██║   ██║██║   ██║██████╔╝███████╗ ");
+            Console.WriteLine("                            ██╔╝     ██║   ██║██╔══██╗██║   ██║██║   ██║██╔═══╝ ╚════██║");
+            Console.WriteLine("                            ██║      ╚██████╔╝██║  ██║╚██████╔╝╚██████╔╝██║     ███████║  ");
+            Console.WriteLine("                            ╚═╝       ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚══════╝    ");
+            Console.WriteLine("                                     ██████╗ ██████╗ ███████╗ █████╗ ████████╗  ");
+            Console.WriteLine("                                    ██╔════╝ ██╔══██╗██╔════╝██╔══██╗╚══██╔══╝");
+            Console.WriteLine("                                    ██║  ███╗██████╔╝█████╗  ███████║   ██║  ");
+            Console.WriteLine("                                    ██║   ██║██╔══██╗██╔══╝  ██╔══██║   ██║   ");
+            Console.WriteLine("                                    ╚██████╔╝██║  ██║███████╗██║  ██║   ██║");
+            Console.WriteLine("                                     ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝ ");
+            Console.WriteLine("                       █████╗ ██████╗ ██╗   ██╗███████╗███╗   ██╗████████╗██╗   ██╗██████╗ ███████╗");
+            Console.WriteLine("                      ██╔══██╗██╔══██╗██║   ██║██╔════╝████╗  ██║╚══██╔══╝██║   ██║██╔══██╗██╔════╝");
+            Console.WriteLine("                      ███████║██║  ██║██║   ██║█████╗  ██╔██╗ ██║   ██║   ██║   ██║██████╔╝█████╗ ");
+            Console.WriteLine("                      ██╔══██║██║  ██║╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ██║   ██║██╔══██╗██╔══╝  ");
+            Console.WriteLine("                      ██║  ██║██████╔╝ ╚████╔╝ ███████╗██║ ╚████║   ██║   ╚██████╔╝██║  ██║███████╗");
+            Console.WriteLine("                      ╚═╝  ╚═╝╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝");
+            Console.WriteLine();
+            ShowHighlightText("==================================================================================================================");
+            Console.WriteLine();
+            Console.WriteLine("                                          PRESS ANY KEY TO CONTINUE . . .                              ");
+            Console.WriteLine();
+            ShowHighlightText("==================================================================================================================");
+            Console.ReadKey();
+        }
+        
+        private static void WarriorSkillSceneOne() // 전사 스킬씬1, 알파 스트라이크
+        {
+            Console.Clear();
+            Console.WriteLine(" ");
+            Console.WriteLine(" ");
+            Console.WriteLine("                                                              Thank you, Michael ! ");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠐⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⣿⣿⣷⠀⣠⣴⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⣿⣦⡀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆");
+            Console.WriteLine("⠈⠈⠙⢦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀");
+            Console.WriteLine("⠀⠖⠀⠀⠑⢷⡤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠻⠿⣿⣿⣿⣇⢤");
+            Console.WriteLine("⠈⠀⠀⠀⠀⠀⠈⠪⣓⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠀⠀⠀⠀⢀⠀⠙⢿⡏⠀⡇⠀⡠⠴⠒⠒⠒⠤⡀⠀");
+            Console.WriteLine("⠀⢠⠀⠀⠀⠀⠀⠀⠈⠒⣌⠢⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⡿⠋⠁⠀⠀⠀⢀⡐⠁⠀⠀⠼⠀⢠⣷⣋⠤⠒⠂⠀⠀⠀⠹");
+            Console.WriteLine("⠀⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢦⣉⠒⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣋⡾⠑⣢⣤⠄⠒⡾⠟⠀⠀⠀⠀⢔⣪⠋⠀⠀⠀⠀⠀⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠳⣤⠈⠑⢄⡀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣿⣿⡟⢝⠀⢻⠀⠁⠚⣦⣀⡠⠀⠀⠀⠀⡸⠀⢯⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠦⣄⠈⠑⠢⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣿⠟⠀⠸⡀⠈⡄⠀⠀⠪⠚⢟⢉⣿⠄⢠⢹⠀⢸⠀⢀⠀⠀⠀⠀⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠓⠤⡀⣆⠈⠒⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠏⠀⠀⠀⢡⠀⠈⠒⠒⠢⠤⣠⢛⣁⠀⡎⡜⢀⡀⡇⢸⠀⠀⠀⠀⠀⠀⢰");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠤⡀⠀⠈⠉⠢⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢇⠀⠀⠀⠀⠀⡞⡟⢆⠈⢀⢃⠎⢸⡇⡼⠀⠀⠀⠀⠀⠀⡸⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠤⣀⠀⠀⠈⠑⠢⢄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⠀⠀⠀⠀⠷⠁⠀⠓⢸⠎⠀⢸⡷⣹⠀⠀⠀⠀⠀⢠⠃⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠢⢄⠀⠀⠀⠈⠉⠲⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⡰⢡⠃⠀⠀⠀⠀⣳⡎⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠤⣀⠀⠀⠀⠀⠉⠒⠢⢄⡀⠀⠀⠀⠀⠀⠳⡀⠘⡄⠀⠀⠀⠀⢀⡜⠁⠁⠀⠀⠀⠀⢠⠿⢀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠒⠢⢄⡀⠀⠀⠀⠀⠉⠑⠲⠤⣀⡐⢾⢆⢱⡀⠀⠀⢀⠞⠀⠀⠀⠀⠀⠀⣴⠋⠀⠈⡆");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠂⠤⣄⡀⠀⠀⢀⡎⢉⠙⣦⠋⠁⠉⢒⠁⠀⠀⠀⠀⠀⢠⠞⠁⢀⡄⠀⡇⠀⠀⠀⢠⠏⢦⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠒⢼⣀⡇⢀⡇⠀⠀⣄⠀⡇⠀⠀⠀⠀⢠⠚⠒⠊⠁⠀⠀⡞⠀⠀⠀⢸⠀⠈⠆");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠤⠯⣹⢈⣦⡔⣈⢢⣸⣄⡶⠒⠒⠋⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⡆⠀⠀⠸⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠑⠹⠤⢃⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠁⢀⠤⡀⡇⠀⠀⠀⢣⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣯⠋⠀⠀⠀⠀⠀⠀⠀⠀⢀⡎⢀⠃⠀⠹⡡⠀⠀⠀⠸⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠃⠀⠀⠀⠀⠀⠀⠀⠀⢀⠏⡇⡞⠀⠀⠀⢣⣎⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠃⠀⠀⠀⠀⠀⠀⠀⠀⢀⠏⡇⡞⠀⠀⠀⢣⣎⠀⠀⠀⡇⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠀⠻⠀⠀⠀⠀⡎⠸⠀⠀⠀⢰");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠋⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠀⠀⠀⠀⡜⠀⠀⢣⠀⠀⢸⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠆⠀⠀⠀⠀⠀⠀⠀⠀⢠⠎⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠘⡄⠀⠀⡇⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠀⠀⠀⠀⠀⠀⢀⠻⡄⠀⠀⠀⠀⠀⡜⠀⠀⠀⠀⠀⠱⢄⡰⠃⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡎⠀⠀⠀⠀⠀⠀⠀⠀⢠⠏⠀⢱⠀⠀⠀⢀⠞⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⠀⠀⠀⠀⠀⠀⠀⠀⢠⠂⠀⠀⠀⢣⣀⠴⠁⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⡠⠃⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠁⠀⠀⠀⠀⠀⠀⠀⡰⠁⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⡴⠁⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⠀⠀⠉⠒⠤⡀⠀⠀⠀⠎⠀⠀⠀⠀⠀⠀⢀⠜⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⠀⠀⠀⠈⠑⢤⡸⠀⠀⠀⠀⠀⠀⢀⠎⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠣⡀⠀⠀⠀⠀⠀⠀⠯⣢⠄⠀⠀⠀⢠⠃⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⡀⠀⠀⠀⠀⠀⠀⠉⠉⠒⡴⠁⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠢⡀⠀⠀⠀⠀⠀⠀⠘⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠤⣀⡀⠀⠀⠀");
+            ShowHighlightText("===============================================================================================================");
+            Console.WriteLine("");
+            Console.WriteLine("                                \"기나긴 모멸과 핍박의 시간이었다..\"");
+            Console.WriteLine("");
+            ShowHighlightText("                                   Warrior의 알파 스트라이크 !! ");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("                                                                                          Press Any Key >> ");
+            ShowHighlightText("===============================================================================================================");
+            Console.ReadLine();
+        }
+
+        private static void WarriorSkillSceneTwo() // 전사 스킬씬1, 더블 스트라이크
+        {
+            Console.Clear();
+            Console.WriteLine(" ");
+            Console.WriteLine(" ");
+            Console.WriteLine("                                                              고맙네 마이콜! ");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠐⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⣿⣿⣷⠀⣠⣴⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⣿⣦⡀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆");
+            Console.WriteLine("⠈⠈⠙⢦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀");
+            Console.WriteLine("⠀⠖⠀⠀⠑⢷⡤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠻⠿⣿⣿⣿⣇⢤");
+            Console.WriteLine("⠈⠀⠀⠀⠀⠀⠈⠪⣓⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠀⠀⠀⠀⢀⠀⠙⢿⡏⠀⡇⠀⡠⠴⠒⠒⠒⠤⡀⠀");
+            Console.WriteLine("⠀⢠⠀⠀⠀⠀⠀⠀⠈⠒⣌⠢⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⡿⠋⠁⠀⠀⠀⢀⡐⠁⠀⠀⠼⠀⢠⣷⣋⠤⠒⠂⠀⠀⠀⠹");
+            Console.WriteLine("⠀⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢦⣉⠒⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣋⡾⠑⣢⣤⠄⠒⡾⠟⠀⠀⠀⠀⢔⣪⠋⠀⠀⠀⠀⠀⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠳⣤⠈⠑⢄⡀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣿⣿⡟⢝⠀⢻⠀⠁⠚⣦⣀⡠⠀⠀⠀⠀⡸⠀⢯⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠦⣄⠈⠑⠢⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣿⠟⠀⠸⡀⠈⡄⠀⠀⠪⠚⢟⢉⣿⠄⢠⢹⠀⢸⠀⢀⠀⠀⠀⠀⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠓⠤⡀⣆⠈⠒⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠏⠀⠀⠀⢡⠀⠈⠒⠒⠢⠤⣠⢛⣁⠀⡎⡜⢀⡀⡇⢸⠀⠀⠀⠀⠀⠀⢰");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠤⡀⠀⠈⠉⠢⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢇⠀⠀⠀⠀⠀⡞⡟⢆⠈⢀⢃⠎⢸⡇⡼⠀⠀⠀⠀⠀⠀⡸⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠤⣀⠀⠀⠈⠑⠢⢄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⠀⠀⠀⠀⠷⠁⠀⠓⢸⠎⠀⢸⡷⣹⠀⠀⠀⠀⠀⢠⠃⠀");
+            Console.WriteLine("   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠢⢄⠀⠀⠀⠈⠉⠲⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⡰⢡⠃⠀⠀⠀⠀⣳⡎⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠤⣀⠀⠀⠀⠀⠉⠒⠢⢄⡀⠀⠀⠀⠀⠀⠳⡀⠘⡄⠀⠀⠀⠀⢀⡜⠁⠁⠀⠀⠀⠀⢠⠿⢀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠒⠢⢄⡀⠀⠀⠀⠀⠉⠑⠲⠤⣀⡐⢾⢆⢱⡀⠀⠀⢀⠞⠀⠀⠀⠀⠀⠀⣴⠋⠀⠈⡆");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠂⠤⣄⡀⠀⠀⢀⡎⢉⠙⣦⠋⠁⠉⢒⠁⠀⠀⠀⠀⠀⢠⠞⠁⢀⡄⠀⡇⠀⠀⠀⢠⠏⢦⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠒⢼⣀⡇⢀⡇⠀⠀⣄⠀⡇⠀⠀⠀⠀⢠⠚⠒⠊⠁⠀⠀⡞⠀⠀⠀⢸⠀⠈⠆");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠤⠯⣹⢈⣦⡔⣈⢢⣸⣄⡶⠒⠒⠋⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⡆⠀⠀⠸⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠑⠹⠤⢃⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠁⢀⠤⡀⡇⠀⠀⠀⢣⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣯⠋⠀⠀⠀⠀⠀⠀⠀⠀⢀⡎⢀⠃⠀⠹⡡⠀⠀⠀⠸⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠃⠀⠀⠀⠀⠀⠀⠀⠀⢀⠏⡇⡞⠀⠀⠀⢣⣎⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠃⠀⠀⠀⠀⠀⠀⠀⠀⢀⠏⡇⡞⠀⠀⠀⢣⣎⠀⠀⠀⡇⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠀⠻⠀⠀⠀⠀⡎⠸⠀⠀⠀⢰");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠋⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠀⠀⠀⠀⡜⠀⠀⢣⠀⠀⢸⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠆⠀⠀⠀⠀⠀⠀⠀⠀⢠⠎⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠘⡄⠀⠀⡇⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠀⠀⠀⠀⠀⠀⢀⠻⡄⠀⠀⠀⠀⠀⡜⠀⠀⠀⠀⠀⠱⢄⡰⠃⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡎⠀⠀⠀⠀⠀⠀⠀⠀⢠⠏⠀⢱⠀⠀⠀⢀⠞⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⠀⠀⠀⠀⠀⠀⠀⠀⢠⠂⠀⠀⠀⢣⣀⠴⠁⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⡠⠃⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠁⠀⠀⠀⠀⠀⠀⠀⡰⠁⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⡴⠁⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⠀⠀⠉⠒⠤⡀⠀⠀⠀⠎⠀⠀⠀⠀⠀⠀⢀⠜⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⠀⠀⠀⠈⠑⢤⡸⠀⠀⠀⠀⠀⠀⢀⠎⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠣⡀⠀⠀⠀⠀⠀⠀⠯⣢⠄⠀⠀⠀⢠⠃⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⡀⠀⠀⠀⠀⠀⠀⠉⠉⠒⡴⠁⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠢⡀⠀⠀⠀⠀⠀⠀⠘⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠤⣀⡀⠀⠀⠀");
+            ShowHighlightText("===============================================================================================================");
+            Console.WriteLine("");
+            Console.WriteLine("                                  \"당장 내 집에서 나가!\"                                             ");
+            Console.WriteLine("");
+            ShowHighlightText("                                   Warrior의 더블 스트라이크 !!! ");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("                                                                                          Press Any Key >> ");
+            ShowHighlightText("===============================================================================================================");
+            Console.ReadLine();
+        }
+
+
+        private static void WizardSkillSceneOne() // 법사 스킬씬 1,3   파이어랑 3번째
+        {
+            Console.Clear();
+            Console.WriteLine("");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠚⢁⠤⠒⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠢⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠄⠀⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⢀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠎⠀⠀⠀⠀⠀⠀⠀   초능력 맛 좀 볼래?⠀⠀⠀⠀⠀⠀⠀              ⠀⠈⡄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                        ⠀⠀⠀       ⢠⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠁⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠂⠤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⡠⠤⠔⠂⠁⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⢀⠂⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine();
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⢿⡏⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠓⠦⣀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠋⠀⠘⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⢄⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⣄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡄⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡀⠀⠀⢀⠔⠉⠑⠦⣤⡀⠀⠀⠀⠀⠀⡀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢣⡀⠀⢸⠀⠀⡀⠀⣿⣯⢠⡀⢠⣾⠞⢡⣾⣿⣯⠳⡀⠀⠀⠀⠀⠀⢠⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠈⠦⡀⢳⣾⣿⣿⠀⡟⢻⡏⢠⣏⣼⣿⣿⢀⡽⠀⠀⠀⠀⢠⠇⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠖⠁⠀⠀⠀⠈⠓⠿⢷⡏⠤⠄⣘⣁⠸⣿⠿⠟⠓⠉⠀⠀⠀⠀⠐⡎⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠎⠀⠀⠀⠀⠀⠀⠀⠀⡠⠋⠀⠀⠀⠀⠈⠙⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⢦⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀ ⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠈⠂⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠱⡀⠀⠀⠀⠀⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠃");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠱⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠢⠀⠀⠤⠔⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢆⠀⠀⠀⠘⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠦⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠋⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠵⠄⠀⠀⢇⢀⠔⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠉⠉⠐⠒⠢⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡤⠔⠊⠉⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡟⠑⠦⢀⣠⣀⣠⡤⠴⠚⠉⠉⠀⠑⢄⡀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠐⡀⠀⠀⢰⠀⠀⠀⠀⠀⣠⠐⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⠒⠋⡇⠀⠀⡜⠀⢠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠒⠤⣀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠈⠂⢦⠘⠀⠀⠀⢀⢠⠋⠑⠦⡀⠀⠀⠀⠀⠀⠀⠀⢀⠴⠋⠀⠀⠀⠘⢄⣀⢀⡠⠎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠒⠤⣄⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀⠀⠀⠂⡤⠒⠓⠒⢄⠀⠀⡝⠁⠀⠀⠀⠈⠲⣀⠀⢀⣀⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⣄⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢄⠀⠀⠮⠤⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠢⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠱⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠳⡀⠀");
+            ShowHighlightText("===============================================================================================================");
+            Console.WriteLine("");
+            Console.WriteLine("                                     \"처신 잘하라고.\"                                             ");
+            Console.WriteLine("");
+            ShowHighlightText("                                   Wizard가 초능력을 사용합니다! ");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("                                                                                          Press Any Key >> ");
+            ShowHighlightText("===============================================================================================================");
+            Console.ReadLine();
+        }
+
+
+        private static void WizardSkillSceneTwo() // 법사 스킬씬2 , 아이스 애로우
+        {
+            Console.Clear();
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⠀⠒⠉⠁⠀⠀⠀⠈⠀⠑⠂⢄⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠔⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠡⡀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⢀⠊⠀⠀⠀⠀⠀⠀호잇!⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠘⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠆⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠤⣌⡂⠀⠄⠀⠀⠐⡆⡤⠤⠄⠀⠠⠤⠠⠒⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⡠⠤⠞⠀⠀⠀⠈⢦⣀⠀⠀⠀⣇⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠐⠋⠉⢳⡀⠛⣠⠤⠖⠒⠒⠒⠒⠦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⢀⡷⢀⣶⣠⢄⣀⡖⢦⣈⣷⡈⢳⡎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠘⣇⢨⠏⢀⣤⡄⠀⣠⣠⠀⡇⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⢠⡎⢈⡇⠈⠉⣱⣶⣿⠀⠀⠻⡇⠀⠀⠀⠀⡠⢶⣤⠀⠀⠀⣤⣦⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢧⣾⠀⠀⠤⢬⢽⡭⠄⠀⠀⣿⠀⠀⠀⠀⣇⣿⣾⡇⣀⣄⣿⣿⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠛⢦⡀⠀⠈⠙⠃⠀⣀⠜⠈⢦⠀⠀⠀⠉⠉⠀⠱⡇⠈⢹⠀⠈⠑⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢉⡍⠉⠩⣯⣀⠀⠀⠘⣆⠀⠀⠀⠀⠀⠀⠉⠉⠉⠀⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⣾⣿⣿⣿⣿⣿⣿⣿⣦⡀⠈⠲⣤⠤⢤⣄⡀⠀⠀⠀⢀⣠⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢠⠎⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⡸⠀⠀⢀⠼⡍⢹⢚⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⡰⠁⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠞⠁⠀⡴⠃⠀⠐⠀⣾⠗⠒⠤⠤⠤⢤⢀⡀⠀⠀⠀⠔⠳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⡴⠁⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⣸⠁⠀⠀⠀⠀⠹⡄⠀⠀⠀⠀⠀⠀⠉⠒⢤⡴⠁⣜⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⢀⠁⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⢹⢀⡤⠤⠤⢄⣀⣀⠀⢸⠀⢀⠠⢤⠤⠸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⡘⠀⡸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⢰⡾⡅⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠈⠉⠉⠳⣮⠶⠞⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⢠⠃⠸⡀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⡿⠀⡇⠀⠀⠀⠀⠀⠀⠀⠈⠢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠘⠐⠐⠁⣿⣿⣿⣿⣿⡛⠿⣿⣿⣿⣿⡇⠀⠀⣷⢰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠹⣿⣿⣿⣿⣷⡀⢈⠙⠛⠿⠿⠶⠶⠾⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⡇⠉⠛⢿⠿⠛⠫⣆⡀⠀⠀⠀⠀⠀⠘⣤⡀⠀⠀⠀⠀⠀⣀⡀⠴⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("\r\n⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⢸⠀⠀⠀⢸⠑⠲⢴⣀⡄⠀⠀⠉⡟⠉⢳⠒⠒⠋⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("\r\n⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⢸⠀⠀⠀⢸⠀⠀⠀⠏⡇⠀⠀⠀⡇⠀⢸⠀⠀⢀⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀ ⢀⠀⠀⢸⠀⠀⠀⢸⠀⠀⢸⠀⡇⠀⠀⢀⠇⠀⢸⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⡐⠊⠉⠀⠀⡸⠀⠀⠀⡆⠀⠀⠈⢺⡇⠀⠀⣸⣀⠀⢸⠀⠀⣮⣀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠁⠒⠒⠒⠊⠁⠀⠀⠀⠉⠒⠒⠒⠚⢧⡀⠀⠉⣉⡇⢸⡀⠀⠀⢈⡇⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠊⠉⠀⠀⠙⠒⠊⠉⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            ShowHighlightText("===============================================================================================================");
+            Console.WriteLine("");
+            Console.WriteLine("                                            \" 호잇 !\"                                             ");
+            Console.WriteLine("");
+            ShowHighlightText("                                   Wizard가 초능력을 사용합니다!! ");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("                                                                                          Press Any Key >> ");
+            ShowHighlightText("===============================================================================================================");
+            Console.ReadLine();
+        }
+
+        private static void MusicionSkillScene() // 음악가 스킬 씬
+        {
+            Console.Clear();
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠤⠤⠤⠤⠤⠤⠤⢀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠤⠒⠂⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠁⠐⠒⠠⠤⢀⡀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠀⠀⢀⡠⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠒⠤⢄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⠉⠀⣀⠤⠂⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠤⡀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢠⠊⠀⠴⠊⠀⠀⠀⠀      ⠀타임 코스모스 ~~⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⡄⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀         ⡂⡀⡀⠀⠀⠀⠀⠀⠀⠀⠈⡄⠀⠀⠀⠀⠀                               ⡠⠖⣁⠔⠁⠀⠀");
+            Console.WriteLine("      ⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀      ⠀⠀    깐따삐야 ~                         ⠀⡇⠀⠀⣀⠔⠋⢀⠔⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠱⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠜⠀⡠⠚⠁⢠⠖⠁");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠑⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠊⡰⠊⠀⣀⠞⠁⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⠒⠁⡠⠊⠀⡠⠚⠁⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠐⠂⠤⠄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡠⠤⠐⠊⠁⠀⡠⠊⠀⡠⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠔⠊⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⡰⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⡀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠉⠉⠉⠱⡀⠀⡐⠉⠉⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⢠⠊⠀⠀⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠔⠊⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⢠⠊⠀⠀⠀⠀⠀⠀⠀⢀⠔⠀⠀⠀⡠⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⠀⢀⠔⠁⠀⠀⠀⠀⠀⠀⢀⠔⠁⠀⠀⡠⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⡇");
+            Console.WriteLine("⠀⠀⠀⢠⠊⠀⠀⠀⠀⠀⠀⠀⡠⠃⠀⠀⢀⠎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡟⢭⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡰⠋⠀⠀⠀⠀⠀⠀⡇");
+            Console.WriteLine("\r\n⠀⠀⡔⠁⠀⠀⠀⠀⠀⠀⢀⠎⠀⠀⢀⠔⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠤⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠰⡋⣉⡺⠆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠊⠀⠀⠀⠀⠀⠀⠀⠀⠁");
+            Console.WriteLine("⢀⠜⠀⠀⠀⠀⠀⠀⢀⠔⠁⠀⠀⡰⠁⠀⠀⠀⠀⢀⣀⣀⣀⣀⡀⠀⠀⣠⠎⠀⢀⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣷⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠞⠁⠀⠀");
+            Console.WriteLine("⠊⠀⠀⠀⠀⠀⠀⢠⠎⠀⠀⢠⠊⠀⠀⠀⡠⠖⠊⠉⠀⠀⠀⠀⠈⠱⠶⠁⠀⠀⠙⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣾⡟⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⢀⠔⠁⠀⠀⡰⠁⠀⠀⢠⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⡔⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⡿⠁⠀⠀⠀⠀⠀♬");
+            Console.WriteLine("⠀⠀⠀⠀⡠⠊⠀⠀⢀⠎⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢴⠃⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⢮⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠁⠀⢀⠔");
+            Console.WriteLine("⠀⠀⢀⠔⠁⠀⠀⡰⠁⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠴⠋⠀⠣⢤⣾⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣞⡏⠢⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀⣀⠔⢁⠔");
+            Console.WriteLine("⠀⢠⠊⠀⠀⢀⠞⠀⠀⠀⠀⠀⠀⠈⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣇⡤⣢⠅⠀⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⢠⣃⢏⡯⠀⠀⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠜⠀⡠⠊⠀⡠⠃⠀");
+            Console.WriteLine("⡰⠁⠀⠀⠠⠃⠀⠀⠀⠀⠀⠀⠀⠀⠈⣦⡀⠀⠀⠀⠀⠀⠀⠀⡠⠔⠹⠊⠁⠀⠀⢿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⢀⠤⠒⠁⠀⠀⠈⠛⢯⣍⣠⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠔⠁⡠⠊⠀⡠⠊");
+            Console.WriteLine("⠀⠀⠀⡔⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠁⠀⠀⠀⠀⢀⠤⢄⡠⠇⠀⠀⠀⠀⠀⠀⠈⠻⠿⣿⠃⠀⠀⠀⠀⠀⠀⠀⡰⠁⡖⠄⠀⡜⠃⠀⠀⠀⢏⢞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠃⡠⠊⠀⢀⠎⠀");
+            Console.WriteLine("⠀⢀⠌⠀⠀⠀⠀♬⠀⠀⠀⠀⠀⠀⠀⠘⡀⠀⠀⠀⠀⡇⠀⠈⠀⠀⠀⠀⠀⠀⠀⠠⡤⠐⡎⣿⠃⠀⠀⠀⠀⠀⠀⢀⠃⠀⢇⡄⠸⠴⠁⡠⠄⡄⠈⡞⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀⠊⠀⠀⡴⠁⠀⠀⠀⠀⠔⠁");
+            Console.WriteLine("⠠⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⠄⠀⠀⠀⠘⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠚⡏⠀⠀⠀⠀⠀⠀⠀⠘⠄⠀⠀⢁⠀⠀⠈⠁⠉⠀⠀⡇⠇⠀⠀⠀⠀⠀⠀⠀⠀⢀⠔⠁⠀⠀⠀⡠⠊⠀⠀⠀⠀⡠⠊⠀");
+            Console.WriteLine("⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠀⠀⠀⠉⢻⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⡔⣿⡶⡀⠀⠀⣀⣀⢰⢠⠃⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀⠀⠀⢀⠔⠁⠀⠀⠀⢠⠊⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⢀⡔⠁⠀⠀⠀⠀⢀⠤⠂⠁⣸⠘⣰⠷⢡⠃⡰⠋⡠⠔⠿⡜⠀⠀⠀⠀⠀⠀⢀⠔⠁⠀⠀⠀⡠⠃⠀⠀⠀⢀⠔⠁⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣎⠀⠀⠀⠀⠀⠀⠀⠀⠈⡇⠀⠀⠀⠄⠄⠰⣖⠉⠀⣀⠤⠄⠂⠉⠀⡠⠉⠉⠀⢰⣿⠗⠁⠠⠁⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠋⠀⠀⠀⢀⠔⠀⠀⠀⠀⡠⠊⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡩⠋⠉⣆⠀⢀⡠⣄⡰⡁⠀⠀⢀⣀⣤⣤⣷⣴⡉⠀⠀⠀⠀⠀⢀⠃⠀⠀⠀⣾⡏⠀⠀⠀⠣⣳⢤⠀⠀⠀⠀⠀⠀⢀⡜⠁⠀⠀⠀⡠⠋⠀⠀⠀⢠⠊⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠁⠀⠀⠀⠉⠁⠀⠀⢀⣧⣴⣾⣿⣿⣿⣿⣿⣿⣿⣷⣤⡀⡠⠔⢹⠀⠀⠀⢰⣿⠁⠀⢀⣠⠔⠡⠿⣱⠀⠀⠀⠀⠀⠈⠀⠀⠀⢀⠜⠀⠀⠀⠀⡰⠁");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡎⠀⠀⠀⠀⠀⠀⠀⠀⣰⠿⠿⠿⠿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⢸⠀⠀⣀⡊⠁⠀⡴⠁⠀⠀⠀⠀⡸⠀⠀⠀⠀⠀⠀⠀⠀⢠⠋⠀⠀⠀⢀⠎");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⡝⠀⠀⠀⠀⠀⠀⠀⠀⢰⠉⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠻⠿⠿⠿⠟⠗⠊⠉⠁⠀⠀⠀⠀⠁⠀⠀⠀⠀⢀⠇⠀⠀⠀⠀⠀⠀⠀⡔⠁⠀⠀⠀⡴⠁⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢞⠜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢆⠀⠀⠀⢀⠜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠌⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⢠⢊⠎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠤⠤⠀⠒⠊⠉⠓⠒⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠂");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⡴⢁⠎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢃⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⠁");
+            Console.WriteLine("⠀⠀⠀⠀⠀⢀⠜⠀⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠅⠒⠒⠠⠤⠤⠤⠒⠒⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠜⠀⠀");
+            ShowHighlightText("===============================================================================================================");
+            Console.WriteLine("");
+            Console.WriteLine("                                 Musician 이(가) 느닷 없이 바이올린을 연주합니다 !! ");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            ShowHighlightText("                                                                        Enter를 누르면 시간을 되돌립니다    ...   ");
+            ShowHighlightText("===============================================================================================================");
+            Console.WriteLine("");
+            Console.ReadLine();
+        }
+
+        private static void WarriorIntroduce() // 전사 소개
+        {
+            Console.Clear();
+            Console.WriteLine("⠀⣠⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠳⠦⣄⠀");
+            Console.WriteLine("⣸⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   Hey Wizard...     Can you Please Go Home now?");
+            Console.WriteLine("⠘⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⠞⠁⠀");
+            Console.WriteLine("⠀⠈⠳⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡤⠞⠉⠀");
+            Console.WriteLine("⠀⠀⠀⠈⠓⠦⢤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣠⣤⠴⠚⠉⠁⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠛⠒⠒⠒⠶⠦⠤⠤⠤⠤⣤⣤⣤⣤⣤⣤⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣠⣤⠀⠀⠠⠤⠴⠶⠒⠚⠋⠉⠉⢩⣇⡰⠒⠦⠤⠤⠤⠤⠴⠶⠒⠒⠋⠉⠉⠁");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡟⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⠀⠀⠀⠀⢀⣀⣾⣧⣤⣤⣤⣤⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢆⠀⠀⡿⠀⢀⣤⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⣀⣀⠈⢳⡄⡇⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠙⠻⡿⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠈⠉⠛⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠻⠿⣿⣿⣿⣿⣿⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣿⣿⣿⣿⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡄⠀⠀⠀⠀⣄⠀⠀⠀⠀⠀⠀⠘⡟⠿⣿⣿⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⡇⠀⠀⠀⢀⣤⠤⠤⠶⠖⠒⠋⠀⠀⠀⠀⠀⠈⠉⠛⠒⠒⠒⠃⠀⡇⠀⠈⠛⠃");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣻⣿⣿⣿⠀⠀⠀⠰⠏⠀⠀⣀⣤⣤⣄⡀⠀⠀⠀⠀⠀⢀⣴⣾⣛⡆⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠃⠈⠻⢿⡄⠀⠀⠀⠀⠀⠘⠷⣄⣹⣿⡗⠀⠀⠀⠀⠀⠻⠿⠿⠋⠀⠀⠀⠀⡇⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⢾⠗⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⢸⠁");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⡀⠀⠀⠈⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡞⢀⠀⠀⣀⡇⠀⠀⠀⠀⠀⠈⠳⡄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠚⠑⠚⠁⠀⣀⠀⠀⠀⠀⠀⠀⠘⡄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣤⣄⣀⣀⡀⢈⣳⠀⠀⠀⠀⠀⠀⢇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⢹⠀⠀⠀⠀⠀⠀⠀⠀⢰⠯⠤⠤⢴⣒⣛⠋⣹⠁⠀⠀⠀⠀⠀⠀⢸⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣇⠀⠀⠀⠀⠀⠀⠀⡏⢠⠖⠊⠉⠀⣈⡷⠃⠀⠀⠀⠀⠀⠀⠀⡞");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠉⠛⠒⠒⠒⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⡼⠁");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠃⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠓⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡜⠁⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡞⠁");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⡎⠻⣦⡀⠀⠀⠀⠀⠀⠀⢠⣤⡴⠫⢦⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠖⠒⠛⠛⠛⠒⠲⣧⠀⠘⢿⣦⠀⠀⠀⠀⠀⣸⠁⣠⠀⢸⡇⢠⠤⢤⣀⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠋⠁⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠈⢻⣧⠀⠀⠀⡰⠃⡴⠁⠀⢸⠀⠀⠀⠀⠀⠉⠙⠳⣄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠈⢿⠀⠀⢰⠃⣸⠃⠀⠀⡏⠀⠀⠀⠀⠀⠀⠀⠀⠈⢳⡀⠀⠀⣰⠛⡆⠀⠀⠀⣀⡄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡤⠞⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠈⢧⠀⠀⣰⠃⣠⣄⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢧⠀⢠⠇⠀⢹⢀⡴⠋⠀⡇");
+            Console.WriteLine("⠀⢀⡤⣄⠀⠀⠀⠀⠀⠀⠀⠀⣠⡖⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡇⢠⡞⠓⢦⠘⡆⠀⠁⡼⠁⠸⡇⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡆⡞⠀⢀⣾⡞⠀⢠⡾⠟⠛⠛⣻⠇");
+            Console.WriteLine("⣀⠈⢧⠈⠳⣄⠀⠀⠀⠀⢠⠖⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⣸⠀⠀⠀⢳⡹⡀⣰⠁⠀⠀⣧⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⠇⠀⠘⣏⠁⠀⠈⢀⣴⣖⠋⠁");
+            ShowHighlightText("=====================================================================================================");
+            Console.WriteLine("");
+            ShowHighlightText("                                          전사 (Warrior) ");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("               본래 세상에서는 Warrior가 아닌 30대의 평범한 가장이었으나");
+            Console.WriteLine("");
+            Console.WriteLine("               \"이상한 초록 도마뱀\"과 \"붉은 코의 외계인\"을 만나 인생이 꼬이기 시작합니다.     ");
+            Console.WriteLine("");
+            Console.WriteLine("               저 사고뭉치들 때문에 온갖 고통을 겪고 있지만  ");
+            Console.WriteLine("");
+            Console.WriteLine("               밀린 전세 대출 이자를 갚기 위해 단련 된 타고난 근성과 ");
+            Console.WriteLine("");
+            Console.WriteLine("               강철 같은 의지력을 바탕으로 오늘도 고군 분투하고 있습니다. ");
+            Console.WriteLine("");
+            Console.WriteLine("                                                                               다음 직업 보기.. Enter");
+            ShowHighlightText("=====================================================================================================");
+            Console.ReadLine();
+        }
+
+        private static void WizardIntroduce() // 마법사 소개
+        {
+            Console.Clear();
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⡰⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢄⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢰⠁⠀⠀⠀⠀⠀⠀       ⠀⠀⠀⠀   ⠀⠀I ~   C# !⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    ⠀    ⠈⡆");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡇⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠑⠄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠠⠔⠋⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠒⠤⢄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⠤⠤⠄⠒⠊⠉⠀⠀");
+            Console.WriteLine("\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠐⠒⠠⠤⢄⣀⣀⣀⣀⣀⡠⠤⠤⡀⢠⠒⠂⠀⠀⠀⠂⠒⠒⠒⠂⠐⠉⠉");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   ⠀⡇⡎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡤⠤⠤⠖⠒⠦⠤⠤⣄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡴⠚⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠑⠦⣄⡀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠉⠳⣄⡀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣧");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣷⠀⠀⠀⠀⠀⠀⠀⣰⢦⣀⠀⠀⠀⠰⡆⠀⣰⠟⠛⠀⣀⡶⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡾⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⠀⠀⠀⠀⠀⠀⢠⠇⢀⣈⠳⡄⠀⢼⣇⣾⠅⢀⢀⣰⠋⠀⠘⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⠃⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⢠⣧⡖⢉⣿⣷⣷⠀⠀⠀⠯⠀⠀⣿⠋⣹⣶⡀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⡄⠀⠀⠀⠘⣿⣿⣿⣿⡿⠉⢀⠀⣀⠀⠀⠀⣿⣾⣿⣿⠃⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠋⠁⠀⠀⠀⠀⠈⠛⠛⠋⢀⡴⠞⠋⠉⠉⠳⣔⠙⢿⣛⣁⣠⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡏⠀⠀⠀⠀⠀⠀⠘⢦⠀⠈⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢠⠇");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣇⠀⠀⠀⠀⠀⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣄⣠⠜⠁");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠢⣄⠀⠀⠀⢀⣰⠋⠀⠀⠀⢀⣀⣤⣶⣶⠖⠛⣿⠉⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠲⢤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠓⠚⠉⠀⠀⠀⠀⣰⣟⣽⠞⠁⠀⠀⠀⣿");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⣟⠛⠛⢫⠟⠉⢓⠶⠶⠦⠤⣤⡤⣴⡶⣾⡿⠋⠀⠀⠀⠀⠀⠀⠘⢦");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡆⠀⢸⡀⠀⡎⠀⠀⠀⣠⠞⠛⣠⡾⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⡄");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣆⠀⢷⡀⠁⠀⢀⡔⠋⣀⡾⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢙⣆⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢢⣤⡍⠉⠉⢉⣤⡾⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠙⠒⠶⢤⣀⣀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠾⠏⡷⠶⡖⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠶⣤⡀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⣼⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠢");
+            Console.WriteLine("");
+            ShowHighlightText("=====================================================================================================");
+            Console.WriteLine("");
+            ShowHighlightText("                                         마법사 (Wizard) ");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("               본인이 1억년 전의 공룡이라는 소리를 하는 이상한 녹색 도마뱀.");
+            Console.WriteLine("");
+            Console.WriteLine("               상당히 뻔뻔한 성격으로, 동료들과 Warrior의 집을 무단 점거하고 있으며     ");
+            Console.WriteLine("");
+            Console.WriteLine("               \"Ho-It !\" 이라는 외침과 함께 시도 때도 없이 마법을 날려대는 통에 ");
+            Console.WriteLine("");
+            Console.WriteLine("               하루가 멀다하고 동네방네 크나큰 민폐를 끼치고 있습니다.");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("                                                                          다음 직업 보기.. Enter");
+            ShowHighlightText("=====================================================================================================");
+            Console.ReadLine();
+        }
+
+        private static void MusicianIntroduce() // 음악가 소개
+        {
+            Console.Clear();
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⣀⣀⣀⣤⣤⣄⣀⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠶⠞⠛⠋⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠈⠉⠛⠓⢦⣄⡀⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠾⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠳⣄⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⣄⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⣄⠀⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣧");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣧⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡤⣤⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⡀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⣀⡀⠀⠀⠀⠀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⣰⠏⠀⠀⠈⠳⣦⣀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡀⣿⠁⠀⠀⠀⢀⡴⠋⠉⠙⠳⠶⠶⠶⠶⠞⠃⠀⠀⠀⠀⠀⠀⠙⠋⠛⢶⡄⠀⠀⠀⠀⠀⠀⠀⣸⠇⠀⠀⠀Yo, Wizard.⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠋⠀⠘⢷⣴⣤⠞⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⣀⣀⡀⠀⠀⠈⣟⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⡏⠀⠀⠀⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⡅⠀⠀⠀⢻⡄⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣇⠀⠀⠀⠈⡇");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣤⣄⡀⠀⠀⠀⣿⠀⠀⠀⠀⣿");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⢹⠀⠀⠀⠀⠀⠀⢠⠟⠁⠀⠀⠈⠉⠳⣄⠀⠀⠀⠀⢀⡴⠋⠀⠀⠀⠇⠀⠀⠀⣿⠀⠀⠀⠀⣿");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡏⠀⠀⠀⠀⠸⣇⠀⠀⠀⠀⠀⠀⠀⢀⣤⣤⣀⡀⠀⠈⠃⠰⠞⡵⠞⢀⣀⣀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⢀⡇");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⢹⡄⠀⠀⠀⠀⠀⠀⠀⠘⢿⣿⠗⠀⠀⠀⠀⠀⠰⢻⣯⣿⡿⠀⠀⠀⠀⠀⠀⡿⠀⠀⠀⣸⠁");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠘⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠉⠉⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⢀⡟⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⡴⠋⠀⠀⠀⠀⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣴⠏⢹⣿⣿⣿⣶⣄⡀⠀⠀⠀⠀⠀⠀⠘⢳⣄⠀⣸⠃⠀⠀⠀⠀⠀⠀⠀⢠⣤⡀⣠⣄⠀⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⢀⡾⠋⠁⠀⠀⠀⠀⠀⠀⠀⣰⠏⠁⠀⠀⠀⠀⠀⠀⠀⠀⣿⡁⠀⠀⣾⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⢹⡆⠉⠛⠓⢦⣄⡀⠀⠀⠀⢸⠀⠛⠃⠈⠙⢦⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⣴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣿⣶⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⡆⠀⠀⠀⠈⢷⠀⠀⠀⡞⠀⠀⠀⠀⠀⠈⡇");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⣸⣧⠀⠀⠀⠀⠀⠀⠀⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣧⠀⠀⠀⠀⢸⡇⠀⠀⢷⠀⠀⠀⠀⠀⠀⢹");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⢰⠋⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠿⢿⣿⠿⠿⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⢀⣤⡟⠀⠀⠀⠸⡆⠀⠀⠀⠀⠀⢸");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠸⣦⡀⠀⠀⠀⠀⠀⠀⠀⢹⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠉⢹⡆⠀⠀⡴⠃⠀⠀⠀⠀⠀⢸");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⢨⡿⠀⠀⠀⠀⠀⠀⠀⠀⠻⣄⡀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⣃⠀⣀⣄⣰⠟⠀⠀⣰⠃⠀⠀⠀⠀⠀⠀⢸⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠸⣷⣦⣴⡆⠀⠀⠀⢀⣠⣤⡼⠿⠓⠿⢿⣄⣀⣀⣀⣀⣀⡀⢀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡤⠖⠋⠉⠉⠛⠉⠉⠁⠀⠀⢰⠇⠀⠀⢸");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠻⠿⣦⡶⠞⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⠉⠙⢳⡖⠦⠤⣴⣄⣀⣀⣴⣤⡶⣯⣁⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀⢀⡏⠀⠀⢸");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠂⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⣿⣷⣤⣤⣼⣷⣤⣼⣿⣿⣿⣿⣿⣿⡌⠋⠀⠀⠀⠀⠀⠀⠈⠉⠉⠙⠛⠋⠀⠀⠀⠀⡏⠀⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠋⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣄");
+            Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡄⠀⠀");
+            Console.WriteLine("");
+            ShowHighlightText("=====================================================================================================");
+            Console.WriteLine("");
+            ShowHighlightText("                                         음악가 (Musician) ");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("               자신이 'Kan-Ta Pyah'(칸-타 퍄) 라는 곳에서 왔다는 주장을 하는 붉은 코의 외계인..");
+            Console.WriteLine("");
+            Console.WriteLine("               악명 높은 Wizard 일당 중에서도 가장 교활하고 사나운 성격으로     ");
+            Console.WriteLine("");
+            Console.WriteLine("               틈만 나면 바이올린을 연주하며 매일 같이 소음 공해를 일으키기 일쑤입니다. ");
+            Console.WriteLine("");
+            Console.WriteLine("               조금이라도 수틀리면 연주하던 악기로 '시간을 되돌려' 버리는 무서운 능력을 가지고 있습니다.");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("                                                                               직업 선택으로 >> Enter");
+            ShowHighlightText("=====================================================================================================");
+            Console.ReadLine();
+        }
+
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+                                                                             

@@ -4,11 +4,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Team7SpartaDungeon", "Team7SpartaDungeon\Team7SpartaDungeon.csproj", "{9DCEB1A5-235E-456C-BE94-504CF11EC4D4}"
-<<<<<<< HEAD
-=======
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LHM", "LHM\LHM.csproj", "{EF76CE2C-3A92-453B-A235-3C3EA00D29AF}"
->>>>>>> 이혜미
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LHM", "LHM\LHM.csproj", "{EF76CE2C-3A92-453B-A235-3C3EA00D29AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
