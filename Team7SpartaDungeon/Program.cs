@@ -1159,7 +1159,7 @@ namespace Team7SpartaDungeon
                         if (20 <= player.Mp)
                         {
                             player.Mp -= 20;
-
+                            WizardSkillSceneOne();
                             for (int i = monsters.Count - 1; 0 <= i; i--)
 
                             {
@@ -1167,7 +1167,6 @@ namespace Team7SpartaDungeon
                                 if (0 < monsterHp[i])
                                 {
 
-                                    WizardSkillSceneOne();
                                     monsterHp[i] -= (int)Math.Ceiling(player.SkillAtk * 0.4f);
                                     monsterBurn[i] = 4;
                                     BattleField();
@@ -1202,10 +1201,10 @@ namespace Team7SpartaDungeon
                     {
                         if (10 <= player.Mp)
                         {
+                            WizardSkillSceneTwo();
                             player.Mp -= 10;
                             if (2 <= CheckMonsters())
                             {
-                                WizardSkillSceneTwo();
                                 int atk = monsters.Count - 1;
                                 int next = 1;
                                 for (int i = 0; i < monsters.Count; i++)
@@ -1258,7 +1257,6 @@ namespace Team7SpartaDungeon
                                     atk = r.Next(0, monsters.Count);
                                     if (0 < monsterHp[atk]) break;
                                 }
-                                WizardSkillSceneTwo();
                                 int bh = monsterHp[atk];
                                 monsterHp[atk] -= player.SkillAtk + 10;
                                 BattleField();
