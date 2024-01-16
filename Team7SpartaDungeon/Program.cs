@@ -252,8 +252,11 @@ namespace Team7SpartaDungeon
             Console.Title = "Team7SpartaDungeon"; // 콘솔 타이틀
             SoundPlayer player = new SoundPlayer(@"C:\bgm.wav"); // C드라이브 bgm.wav 재생 
             player.PlayLooping(); // bgm 루프
-            MusicionSkillScene();
-            //PrintStartLogo();
+            PrintStartLogo();
+           
+            WarriorIntroduce();
+            WizardIntroduce();
+            MusicianIntroduce();
             SpartaDungeon sd = new SpartaDungeon();
             sd.PlayGame();
             Console.Beep();
@@ -312,23 +315,50 @@ namespace Team7SpartaDungeon
                 items.Add(new Item("잡동사니", 2, 0, 0, 0, 300));  // 잡템, 공격력 0, 방어력 0, 가격 300
             }
 
-            public void PlayGame() // 게임 시작 메서드
+            public void PlayStartLogo2() // 직업 선택
             {
-                ItemTable();
-                dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
-                dungeon.Add(siegeMinion);
-                dungeon.Add(voidBug);
-                dungeon.Add(minion);
-                dungeon.Add(siegeMinion);
-                dungeon.Add(voidBug);
-                dungeon.Add(minion);
-                dungeon.Add(siegeMinion);
-                dungeon.Add(voidBug);
-
-                ShopItemTable();
-
                 Console.Clear();
-                Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n원하시는 직업을 선택해주세요.\n1. 전사\n2. 마법사\n3. 음악가\n");
+                Console.WriteLine("");
+                Console.WriteLine("⠀⠀⠀Warrior ⣠⣴⣶⣶⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                  ⠀⠀⠀⠀⠀⠀Musician");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⢀⠀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⢀⣀⣸⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠢⠀⠀⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⣀⡠⠔⠋⠉⠉⠉⠉⠒⢄⠀");
+                Console.WriteLine("⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀     ⠀⠀⠀⠀Wizard⠀⠀⠀⠀⢡⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠴⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢇");
+                Console.WriteLine("⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠤⠒⠒⠒⠉⠉⡗⠗⠢⠤⣀⠀⠀⠀⠀⠀⠀⠀⡔⠁⠀⠀⠀⠀⠀⠀⠀⣀⠤⠤⢄⣀⠀⠀⠘⡆");
+                Console.WriteLine("⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠙⠢⡀⠀⠀⠀⡞⠀⠀⠀⠀⢀⡠⠤⠄⠎⠀⠀⠀⠀⠈⠑⡄⠀");
+                Console.WriteLine("⠀⠘⣿⣿⣿⣿⣿⣿⣿⠛⠛⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠣⡄⠀⡇⠀⠀⢀⠔⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⠀⠸⠄");
+                Console.WriteLine("⠀⠀⠘⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀⠀⠉⠛⠿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⡜⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⣳⠂⢀⠏⠀⡠⠀⠀⢄⠀⠀⠀⢠⠊⠀⠃⢸⠀⠀⠀⠈⠓");
+                Console.WriteLine("⠀⠀⠀⠘⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢻⠻⢿⣿⠀⠀⠀⠀⠀⠀⠀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣷⡀⢸⡀⠀⠃⠀⡀⠀⠃⠀⠀⣣⡖⠀⠀⢸⠀⠀⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠠⠚⠛⠿⣿⡇⠐⠉⠉⢒⣄⡀⠀⢀⣴⣧⢸⠀⠀⠉⠀⠀⠀⠀⠀⠀⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⢸⠃⠀⠀⠈⠘⠃⠀⢀⣀⣁⣀⠀⠀⠛⠲⡄⠀⠀⠀⠂");
+                Console.WriteLine("⠀⠀⠀⠐⡄⠀⠀⠀⠁⠀⠀⠨⠻⠿⠃⠀⠀⠨⡁⢸⠀⠀⠀⠀⠀⠀⠀⠀⢀⠃⠀⠀⠀⢀⡤⠶⠒⠲⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡎⢆⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⣆⠀⠀⢸⠀⢀⡤⠃⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠈⠢⢀⣀⠀⠀⠀⠀⠀⠀⠀⢄⠤⠤⠂⠀⠱⣄⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠚⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠐⠋⠈⠉⠃⠀⠀⠀⠀⠀⠀⠀⡇⠀⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⡇⠀⠰⣼⠤⠎⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡪⠃⠀⠀⠀⠀⠀⠈⡀⠀⠀⠀⠀⠀⠀⢀⠤⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠃⠀⡇⡀⠀⠀⠀⠘⢿⣿⣿⣿⠟⠀⢀⠜⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⢆⠀⠀⠀⠒⠉⠉⠉⠐⠒⠀⠒⠁⡀⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⡎⠎⣹⣷⠀⠀⠀⠀⠀⠀⡰⣮⡉⠓⡄⠀⠀⠀⠀⠀⠀⡎⠒⠒⠛⠄⣰⣀⣀⡤⠤⡗⠒⢲⣶⣏");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠇⠀⠀⠀⠀⠀⠀⠀⠀⠳⡀⠀⠀⠀⠀⡇⢿⣿⣿⠖⠒⠤⢄⠀⢰⣥⣿⡿⠀⡀⠀⠀⠀⠀⠀⡼⠀⠀⠀⠀⡠⣿⣿⣿⣧⣴⣷⣶⣿⣿⣷⡈⠂⢄⠀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠡⠀⠀⠀⠀⠀⠀⠀⠀⠀⠜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢈⠶⠶⠟⠃⠘⠛⢻⠉⠀⠀⠀⠀⢳⠘⠿⠿⠔⠺⠛⠽⠟⠒⢂⠜⠀⠀⠀⢀⠊⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠉⠄⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢀⠀⠤⠰⠕⢄⠀⠀⠀⠀⢀⡤⣊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⠀⠀⠀⠀⠀⠀⠘⡄⠀⠀⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡄⠀⠀⡠⠁⢠⣿⣿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠈⠂");
+                Console.WriteLine("⠀⠀⠀⠀⡠⠒⠉⠀⠀⠀⠀⡆⠀⢂⠀⠀⠀⡌⡄⠰⠈⠑⠢⢀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠈⠓⠒⠒⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⢠⠁⠀⢸⠏⠀⢀⡾⠛⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⢀");
+                Console.WriteLine("⠀⠀⠀⡘⠀⠀⠀⠀⠀⠀⠀⢰⠀⠀⠑⡀⠀⠇⠀⠀⠀⠀⠀⠀⠡⡀⠀⠀⠀⠀⠀⠱⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⡨⠀⠀⠆⠀⣠⠋⠀⢀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠁⠀");
+                Console.WriteLine("⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠈⣄⠊⠉⠚⢆⡐⠀⠶⠀⠀⠀⠀⠀⠑⡄⠀⠀⠀⠀⠀⠈⠢⢤⣀⣀⣤⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⠖⠁⠎⠀⠀⢸⣀⡀⠁⢀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀");
+                Console.WriteLine("⠀⠀⡐⠁⠀⠀⠀⠀⠀⠀⠀⠀⢻⠀⠀⠀⠈⠃⠀⠀⠐⠒⠒⠠⡀⢸⠘⠢⡀⠀⠀⠀⠀⠀⠀⠀⢀⠇⡹⠉⠣⡤⣆⣀⣠⠤⡶⢲⠖⢖⠊⠉⠀⠀⠀⠀⠣⠤⣺⠉⠀⢈⠆⠁⠀⢹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀");
+                Console.WriteLine("⠀⠰⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠀⠀⠀⠀⠀⠀⠀⠈⠢⠀⠀⠈⢺⡄⠀⢡⠀⠀⠀⠀⠀⠀⢀⠆⣴⠃⠀⡘⠀⠀⠀⢠⠊⠀⠘⡀⠈⠻⠲⠤⠤⠤⠤⠒⠉⠈⡗⠒⠉⠀⠢⡤⠊⢻⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⢸⠀⠀⠀⠀⢀⡴⠋⡰⠉⡄⠀⠀⠀⠀⡠⠁⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢄⣀⣀⣠⣀⣠⣾⣿⣿⣿⣿⣿⣿⠟⡇⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠓⠄⡐⠒⠺⣀⠀⣀⠴⠊⠀⢀⠇⠀⠈⠢⠤⠄⠊⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⢻⠛⠻⠛⠛⠋⠉⠉⠀⡇⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡈⠀⠁⢰⠀⠀⢠⠀⠷⡀⠀⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠃⡸⠀⠀⠀⠀⠀⠀⢰⠀⠧⣀⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢈⠘⢄⠀⠈⢄⠐⠁⠀⢀⠇⠀⠀⢠⢷⠒⠀⠉⠉⠀⠒⠢⢄⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀⢀⡀⠀⠀⠀⠀⢀⡠⠊⡔⠉⠀⠀⡠⠀⠀⠀⠀⢘⠀⠀⠀⠈⠐⠄⠀");
+                Console.WriteLine("\r\n⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢄⠀⢁⡹⠀⠀⢀⣠⠎⠀⢀⡴⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠇⠀⠀⠀⠀⠙⡒⠒⠒⠒⠉⠀⠀⢄⣀⠠⣒⣀⠀⠀⠀⠀⠈⠢⣀⡀");
+                Console.WriteLine("⠀⠈⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠸⣍⠉⠉⠁⠀⢀⣠⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⢀⣠⠤⠂⠉⠀⠀⠉⢢⠀");
+                Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠁⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀⠀⠀⢱⠤⠔⠂⠉⠁⠀⠀⠀⠀⠀⠀⠀⡸⠀");
+                Console.WriteLine("");
+                ShowHighlightText("=======================================================================================================================");
+                Console.WriteLine("");
+                ShowHighlightText("                                    <<    7조의 대모험이⠀시작됩니다 !⠀  >>");
+                Console.WriteLine("");
+                Console.WriteLine("                                             직업을  선택 해주세요!");
+                Console.WriteLine("");               
+                Console.WriteLine("");
+                Console.WriteLine("                    1. 전사                        2. 마법사                    3. 음악가       ");
+                Console.WriteLine("");
+                ShowHighlightText("=======================================================================================================================");
                 switch (ChoiceInput(1, 3)) // 직업 선택
                 {
                     case 1:
@@ -355,13 +385,34 @@ namespace Team7SpartaDungeon
                         player.AvailableSkill.Add(true);
                         break;
                 }
-                Console.WriteLine("원하시는 이름을 설정해주세요.");
+            }
+
+            public void PlayGame() // 게임 시작 메서드
+            {
+                ItemTable();
+                dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
+                dungeon.Add(siegeMinion);
+                dungeon.Add(voidBug);
+                dungeon.Add(minion);
+                dungeon.Add(siegeMinion);
+                dungeon.Add(voidBug);
+                dungeon.Add(minion);
+                dungeon.Add(siegeMinion);
+                dungeon.Add(voidBug);
+
+                ShopItemTable();
+
+                Console.Clear();
+                PlayStartLogo2(); // 직업 선택씬
+
+
+                ShowHighlightText(" 원하시는 이름을 설정해주세요. ");
                 player.Name = Console.ReadLine();    // 플레이어 이름 입력
                 while (true)
                 {
                     Console.Clear();
 
-                    Console.WriteLine("스파르타 던전에 오신 여러분 환영합니다.\n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3. 인벤토리\n4. 상점\n5. 저장 / 불러오기\n");
+                    ShowHighlightText(" 반갑습니다! \n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3. 인벤토리\n4. 상점\n5. 저장 / 불러오기\n");
                     switch (ChoiceInput(1, 5)) // 최초 선택지
                     {
                         case 1:
@@ -949,6 +1000,7 @@ namespace Team7SpartaDungeon
                                     player.Mp -= 10;
                                     if (Critical <= 15)
                                     {
+                                        WarriorSkillSceneOne();
                                         monsterHp[atk - 1] -= (int)Math.Ceiling(player.Atk * 3.2f); //  알파 스트라이크 데미지
                                         BattleField();
                                         Console.WriteLine($"\n\n{player.Name} 의 알파 스트라이크!\n");
@@ -956,6 +1008,7 @@ namespace Team7SpartaDungeon
                                     }
                                     else
                                     {
+                                        WarriorSkillSceneOne();
                                         monsterHp[atk - 1] -= (int)Math.Ceiling(player.Atk * 2);
                                         BattleField();
                                         Console.WriteLine($"\n\n{player.Name} 의 알파 스트라이크!\n");
@@ -1007,8 +1060,10 @@ namespace Team7SpartaDungeon
                                 player.Mp -= 15;
                                 if (Critical <= 15)
                                 {
+                                    
                                     monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 2.4);
                                     monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 2.4);
+                                    WarriorSkillSceneTwo();
                                     BattleField();
                                     Console.SetCursorPosition(0, 3 + atk1);
                                     Console.WriteLine($"◈");
@@ -1021,6 +1076,7 @@ namespace Team7SpartaDungeon
                                 }
                                 else
                                 {
+                                    WarriorSkillSceneTwo();
                                     monsterHp[atk1] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     monsterHp[atk2] -= (int)Math.Ceiling(player.Atk * 1.5);
                                     BattleField();
@@ -1112,7 +1168,7 @@ namespace Team7SpartaDungeon
                                 if (0 < monsterHp[i])
                                 {
 
-
+                                    WizardSkillSceneOne();
                                     monsterHp[i] -= (int)Math.Ceiling(player.SkillAtk * 0.4f);
                                     monsterBurn[i] = 4;
                                     BattleField();
@@ -1150,6 +1206,7 @@ namespace Team7SpartaDungeon
                             player.Mp -= 10;
                             if (2 <= CheckMonsters())
                             {
+                                WizardSkillSceneTwo();
                                 int atk = monsters.Count - 1;
                                 int next = 1;
                                 for (int i = 0; i < monsters.Count; i++)
@@ -1202,6 +1259,7 @@ namespace Team7SpartaDungeon
                                     atk = r.Next(0, monsters.Count);
                                     if (0 < monsterHp[atk]) break;
                                 }
+                                WizardSkillSceneTwo();
                                 int bh = monsterHp[atk];
                                 monsterHp[atk] -= player.SkillAtk + 10;
                                 BattleField();
@@ -1238,6 +1296,7 @@ namespace Team7SpartaDungeon
                     }
                     if (player is Wizard && use == 3 && player.AvailableSkill[use - 1]) // 마법사 3번 스킬 // 메디테이션 - MP +10, 일시적으로 마법력 * 0.5 의 방어력을 얻고 명상에 빠진다.
                     {
+                        WizardSkillSceneOne();
                         int bd = player.Def;
                         player.Def += (int)Math.Ceiling(player.SkillAtk * 0.5);
                         BattleField();
@@ -1256,14 +1315,11 @@ namespace Team7SpartaDungeon
                     //---------------- 음악가 스킬 -----------------------------------------------------------------------------------------------------------------------------------------------
                     if (player is Musician && use == 1 && player.AvailableSkill[use - 1]) // 음악가 1번 스킬 - 타임 코스모스, 그냥 냅다 게임 시작 페이지로 돌아갑니다.
                     {
-                        if (50 < player.Mp)
+                        if (50 <= player.Mp)
                         {
                             player.Mp -= 50;
-
-                            Console.WriteLine("\n\nEnter를 누르면 시간을 되돌립니다.");
-                            Console.ReadLine();
-                            PlayGame(); // 다시 게임 시작 초기화
-
+                            MusicionSkillScene();
+                            PlayGame(); // 다시 게임 시작
                             if (CheckMonsters() != 0) EnemyFrontPhase();
                         }
                         else
@@ -1712,39 +1768,42 @@ namespace Team7SpartaDungeon
 
         private static void PrintStartLogo() // 게임 스타트 로고
         {
-            ShowHighlightText("===============================================================================");
+            Console.Clear();
+            ShowHighlightText("=====================================================================================================================");
             Console.WriteLine("   ");
-            Console.WriteLine(" ███████╗     ██████╗ ██████╗  ██████╗ ██╗   ██╗██████╗ ███████");
-            Console.WriteLine(" ╚════██║    ██╔════╝ ██╔══██╗██╔═══██╗██║   ██║██╔══██╗██╔════╝  ");
-            Console.WriteLine("     ██╔╝    ██║  ███╗██████╔╝██║   ██║██║   ██║██████╔╝███████╗ ");
-            Console.WriteLine("    ██╔╝     ██║   ██║██╔══██╗██║   ██║██║   ██║██╔═══╝ ╚════██║");
-            Console.WriteLine("    ██║      ╚██████╔╝██║  ██║╚██████╔╝╚██████╔╝██║     ███████║  ");
-            Console.WriteLine("    ╚═╝       ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚══════╝    ");
-            Console.WriteLine("            ██████╗ ██████╗ ███████╗ █████╗ ████████╗  ");
-            Console.WriteLine("           ██╔════╝ ██╔══██╗██╔════╝██╔══██╗╚══██╔══╝");
-            Console.WriteLine("           ██║  ███╗██████╔╝█████╗  ███████║   ██║  ");
-            Console.WriteLine("           ██║   ██║██╔══██╗██╔══╝  ██╔══██║   ██║   ");
-            Console.WriteLine("           ╚██████╔╝██║  ██║███████╗██║  ██║   ██║");
-            Console.WriteLine("            ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝ ");
-            Console.WriteLine("  █████╗ ██████╗ ██╗   ██╗███████╗███╗   ██╗████████╗██╗   ██╗██████╗ ███████╗");
-            Console.WriteLine(" ██╔══██╗██╔══██╗██║   ██║██╔════╝████╗  ██║╚══██╔══╝██║   ██║██╔══██╗██╔════╝");
-            Console.WriteLine(" ███████║██║  ██║██║   ██║█████╗  ██╔██╗ ██║   ██║   ██║   ██║██████╔╝█████╗ ");
-            Console.WriteLine(" ██╔══██║██║  ██║╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ██║   ██║██╔══██╗██╔══╝  ");
-            Console.WriteLine(" ██║  ██║██████╔╝ ╚████╔╝ ███████╗██║ ╚████║   ██║   ╚██████╔╝██║  ██║███████╗");
-            Console.WriteLine(" ╚═╝  ╚═╝╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝");
+            Console.WriteLine("                         ███████╗     ██████╗ ██████╗  ██████╗ ██╗   ██╗██████╗ ███████");
+            Console.WriteLine("                         ╚════██║    ██╔════╝ ██╔══██╗██╔═══██╗██║   ██║██╔══██╗██╔════╝  ");
+            Console.WriteLine("                             ██╔╝    ██║  ███╗██████╔╝██║   ██║██║   ██║██████╔╝███████╗ ");
+            Console.WriteLine("                            ██╔╝     ██║   ██║██╔══██╗██║   ██║██║   ██║██╔═══╝ ╚════██║");
+            Console.WriteLine("                            ██║      ╚██████╔╝██║  ██║╚██████╔╝╚██████╔╝██║     ███████║  ");
+            Console.WriteLine("                            ╚═╝       ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚══════╝    ");
+            Console.WriteLine("                                     ██████╗ ██████╗ ███████╗ █████╗ ████████╗  ");
+            Console.WriteLine("                                    ██╔════╝ ██╔══██╗██╔════╝██╔══██╗╚══██╔══╝");
+            Console.WriteLine("                                    ██║  ███╗██████╔╝█████╗  ███████║   ██║  ");
+            Console.WriteLine("                                    ██║   ██║██╔══██╗██╔══╝  ██╔══██║   ██║   ");
+            Console.WriteLine("                                    ╚██████╔╝██║  ██║███████╗██║  ██║   ██║");
+            Console.WriteLine("                                     ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝ ");
+            Console.WriteLine("                       █████╗ ██████╗ ██╗   ██╗███████╗███╗   ██╗████████╗██╗   ██╗██████╗ ███████╗");
+            Console.WriteLine("                      ██╔══██╗██╔══██╗██║   ██║██╔════╝████╗  ██║╚══██╔══╝██║   ██║██╔══██╗██╔════╝");
+            Console.WriteLine("                      ███████║██║  ██║██║   ██║█████╗  ██╔██╗ ██║   ██║   ██║   ██║██████╔╝█████╗ ");
+            Console.WriteLine("                      ██╔══██║██║  ██║╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ██║   ██║██╔══██╗██╔══╝  ");
+            Console.WriteLine("                      ██║  ██║██████╔╝ ╚████╔╝ ███████╗██║ ╚████║   ██║   ╚██████╔╝██║  ██║███████╗");
+            Console.WriteLine("                      ╚═╝  ╚═╝╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝");
             Console.WriteLine();
-            ShowHighlightText("==============================================================================");
+            ShowHighlightText("==================================================================================================================");
             Console.WriteLine();
-            ShowHighlightText("                         PRESS ANY KEY TO CONTINUE . . .                              ");
+            Console.WriteLine("                                          PRESS ANY KEY TO CONTINUE . . .                              ");
             Console.WriteLine();
-            ShowHighlightText("==============================================================================");
+            ShowHighlightText("==================================================================================================================");
             Console.ReadKey();
         }
+        
         private static void WarriorSkillSceneOne() // 전사 스킬씬1, 알파 스트라이크
         {
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("                                                              Thank you, Michael");
+            Console.Clear();
+            Console.WriteLine(" ");
+            Console.WriteLine(" ");
+            Console.WriteLine("                                                              Thank you, Michael ! ");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠐⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
             Console.WriteLine(" ⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⣿⣿⣷⠀⣠⣴⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
@@ -1759,7 +1818,7 @@ namespace Team7SpartaDungeon
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠓⠤⡀⣆⠈⠒⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠏⠀⠀⠀⢡⠀⠈⠒⠒⠢⠤⣠⢛⣁⠀⡎⡜⢀⡀⡇⢸⠀⠀⠀⠀⠀⠀⢰");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠤⡀⠀⠈⠉⠢⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢇⠀⠀⠀⠀⠀⡞⡟⢆⠈⢀⢃⠎⢸⡇⡼⠀⠀⠀⠀⠀⠀⡸⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠤⣀⠀⠀⠈⠑⠢⢄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⠀⠀⠀⠀⠷⠁⠀⠓⢸⠎⠀⢸⡷⣹⠀⠀⠀⠀⠀⢠⠃⠀");
-            Console.WriteLine("\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠢⢄⠀⠀⠀⠈⠉⠲⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⡰⢡⠃⠀⠀⠀⠀⣳⡎⠀⠀");
+            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠢⢄⠀⠀⠀⠈⠉⠲⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⡰⢡⠃⠀⠀⠀⠀⣳⡎⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠤⣀⠀⠀⠀⠀⠉⠒⠢⢄⡀⠀⠀⠀⠀⠀⠳⡀⠘⡄⠀⠀⠀⠀⢀⡜⠁⠁⠀⠀⠀⠀⢠⠿⢀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠒⠢⢄⡀⠀⠀⠀⠀⠉⠑⠲⠤⣀⡐⢾⢆⢱⡀⠀⠀⢀⠞⠀⠀⠀⠀⠀⠀⣴⠋⠀⠈⡆");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠂⠤⣄⡀⠀⠀⢀⡎⢉⠙⣦⠋⠁⠉⢒⠁⠀⠀⠀⠀⠀⢠⠞⠁⢀⡄⠀⡇⠀⠀⠀⢠⠏⢦⠀⠀⠀");
@@ -1784,22 +1843,23 @@ namespace Team7SpartaDungeon
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⡀⠀⠀⠀⠀⠀⠀⠉⠉⠒⡴⠁⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠢⡀⠀⠀⠀⠀⠀⠀⠘⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠤⣀⡀⠀⠀⠀");
-            Console.WriteLine("===============================================================================================================");
+            ShowHighlightText("===============================================================================================================");
             Console.WriteLine("");
-            Console.WriteLine(""); "\"기나긴 모멸과 핍박의 시간이었다..\""
+            Console.WriteLine("                                \"기나긴 모멸과 핍박의 시간이었다..\"");
             Console.WriteLine("");
-            Console.WriteLine("                                   Warrior의 알파 스트라이크 !! ");
+            ShowHighlightText("                                   Warrior의 알파 스트라이크 !! ");
             Console.WriteLine("");
             Console.WriteLine("");
             Console.WriteLine("                                                                                          Press Any Key >> ");
-            Console.WriteLine("===============================================================================================================");
+            ShowHighlightText("===============================================================================================================");
             Console.ReadLine();
         }
 
         private static void WarriorSkillSceneTwo() // 전사 스킬씬1, 더블 스트라이크
         {
-            Console.WriteLine("");
-            Console.WriteLine("");
+            Console.Clear();
+            Console.WriteLine(" ");
+            Console.WriteLine(" ");
             Console.WriteLine("                                                              고맙네 마이콜! ");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠐⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
@@ -1815,7 +1875,7 @@ namespace Team7SpartaDungeon
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠓⠤⡀⣆⠈⠒⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠏⠀⠀⠀⢡⠀⠈⠒⠒⠢⠤⣠⢛⣁⠀⡎⡜⢀⡀⡇⢸⠀⠀⠀⠀⠀⠀⢰");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠤⡀⠀⠈⠉⠢⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢇⠀⠀⠀⠀⠀⡞⡟⢆⠈⢀⢃⠎⢸⡇⡼⠀⠀⠀⠀⠀⠀⡸⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠤⣀⠀⠀⠈⠑⠢⢄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⠀⠀⠀⠀⠷⠁⠀⠓⢸⠎⠀⢸⡷⣹⠀⠀⠀⠀⠀⢠⠃⠀");
-            Console.WriteLine("\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠢⢄⠀⠀⠀⠈⠉⠲⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⡰⢡⠃⠀⠀⠀⠀⣳⡎⠀⠀");
+            Console.WriteLine("   ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠢⢄⠀⠀⠀⠈⠉⠲⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⡰⢡⠃⠀⠀⠀⠀⣳⡎⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠒⠤⣀⠀⠀⠀⠀⠉⠒⠢⢄⡀⠀⠀⠀⠀⠀⠳⡀⠘⡄⠀⠀⠀⠀⢀⡜⠁⠁⠀⠀⠀⠀⢠⠿⢀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠒⠢⢄⡀⠀⠀⠀⠀⠉⠑⠲⠤⣀⡐⢾⢆⢱⡀⠀⠀⢀⠞⠀⠀⠀⠀⠀⠀⣴⠋⠀⠈⡆");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠂⠤⣄⡀⠀⠀⢀⡎⢉⠙⣦⠋⠁⠉⢒⠁⠀⠀⠀⠀⠀⢠⠞⠁⢀⡄⠀⡇⠀⠀⠀⢠⠏⢦⠀⠀⠀");
@@ -1840,21 +1900,22 @@ namespace Team7SpartaDungeon
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⡀⠀⠀⠀⠀⠀⠀⠉⠉⠒⡴⠁⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠢⡀⠀⠀⠀⠀⠀⠀⠘⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠤⣀⡀⠀⠀⠀");
-            Console.WriteLine("===============================================================================================================");
+            ShowHighlightText("===============================================================================================================");
             Console.WriteLine("");
             Console.WriteLine("                                  \"당장 내 집에서 나가!\"                                             ");
             Console.WriteLine("");
-            Console.WriteLine("                                   Warrior의 더블 스트라이크 !!! ");
+            ShowHighlightText("                                   Warrior의 더블 스트라이크 !!! ");
             Console.WriteLine("");
             Console.WriteLine("");
             Console.WriteLine("                                                                                          Press Any Key >> ");
-            Console.WriteLine("===============================================================================================================");
+            ShowHighlightText("===============================================================================================================");
             Console.ReadLine();
         }
 
 
         private static void WizardSkillSceneOne() // 법사 스킬씬 1,3   파이어랑 3번째
         {
+            Console.Clear();
             Console.WriteLine("");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠚⢁⠤⠒⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠢⡀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠄⠀⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⢀");
@@ -1888,21 +1949,22 @@ namespace Team7SpartaDungeon
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀⠀⠀⠂⡤⠒⠓⠒⢄⠀⠀⡝⠁⠀⠀⠀⠈⠲⣀⠀⢀⣀⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⣄⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢄⠀⠀⠮⠤⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠢⡀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠱⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠳⡀⠀");
-            Console.WriteLine("===============================================================================================================");
+            ShowHighlightText("===============================================================================================================");
             Console.WriteLine("");
             Console.WriteLine("                                     \"처신 잘하라고.\"                                             ");
             Console.WriteLine("");
-            Console.WriteLine("                                   Wizard가 초능력을 사용합니다! ");
+            ShowHighlightText("                                   Wizard가 초능력을 사용합니다! ");
             Console.WriteLine("");
             Console.WriteLine("");
             Console.WriteLine("                                                                                          Press Any Key >> ");
-            Console.WriteLine("===============================================================================================================");
+            ShowHighlightText("===============================================================================================================");
             Console.ReadLine();
         }
 
 
-        private static void WizardSkillScene2() // 법사 스킬씬2 , 아이스 애로우
+        private static void WizardSkillSceneTwo() // 법사 스킬씬2 , 아이스 애로우
         {
+            Console.Clear();
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⠀⠒⠉⠁⠀⠀⠀⠈⠀⠑⠂⢄⠀⠀⠀⠀⠀⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠔⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠡⡀⠀⠀⠀⠀⠀");
@@ -1936,20 +1998,21 @@ namespace Team7SpartaDungeon
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠊⠉⠀⠀⠙⠒⠊⠉⠀⠀⠀⠀⠀⠀");
             Console.WriteLine("");
             Console.WriteLine("");
-            Console.WriteLine("===============================================================================================================");
+            ShowHighlightText("===============================================================================================================");
             Console.WriteLine("");
             Console.WriteLine("                                            \" 호잇 !\"                                             ");
             Console.WriteLine("");
-            Console.WriteLine("                                   Wizard가 초능력을 사용합니다!! ");
+            ShowHighlightText("                                   Wizard가 초능력을 사용합니다!! ");
             Console.WriteLine("");
             Console.WriteLine("");
             Console.WriteLine("                                                                                          Press Any Key >> ");
-            Console.WriteLine("===============================================================================================================");
+            ShowHighlightText("===============================================================================================================");
             Console.ReadLine();
         }
 
         private static void MusicionSkillScene() // 음악가 스킬 씬
         {
+            Console.Clear();
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠤⠤⠤⠤⠤⠤⠤⢀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠤⠒⠂⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠁⠐⠒⠠⠤⢀⡀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠀⠀⢀⡠⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠒⠤⢄");
@@ -1987,76 +2050,20 @@ namespace Team7SpartaDungeon
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⢠⢊⠎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠤⠤⠀⠒⠊⠉⠓⠒⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠂");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⡴⢁⠎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢃⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⠁");
             Console.WriteLine("⠀⠀⠀⠀⠀⢀⠜⠀⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠅⠒⠒⠠⠤⠤⠤⠒⠒⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠜⠀⠀");
-            Console.WriteLine("===============================================================================================================");
+            ShowHighlightText("===============================================================================================================");
             Console.WriteLine("");
-            Console.WriteLine("                                 Musician 이(가) 시간을 되돌립니다 !! ");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("                                                                                          Press Any Key >> ");
-            Console.WriteLine("===============================================================================================================");
-            Console.WriteLine("");
-            Console.ReadLine();
-        }
-
-        private static void PlayStartLogo2() // 게임 시작 로고2
-        {
+            Console.WriteLine("                                 Musician 이(가) 느닷 없이 바이올린을 연주합니다 !! ");
             Console.WriteLine("");
             Console.WriteLine("");
-            Console.WriteLine("⠀                                        ⠀⠀");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("⠀⠀⠀Warrior ⣠⣴⣶⣶⣶⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀                  ⠀⠀⠀⠀⠀⠀Musician");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⢀⠀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
-            Console.WriteLine("⠀⠀⠀⠀⢀⣀⣸⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠢⠀⠀⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠤⣀⡠⠔⠋⠉⠉⠉⠉⠒⢄⠀");
-            Console.WriteLine("⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀⠀⠀⠀     ⠀⠀⠀⠀Wizard⠀⠀⠀⠀⢡⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠴⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢇");
-            Console.WriteLine("⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠤⠒⠒⠒⠉⠉⡗⠗⠢⠤⣀⠀⠀⠀⠀⠀⠀⠀⡔⠁⠀⠀⠀⠀⠀⠀⠀⣀⠤⠤⢄⣀⠀⠀⠘⡆");
-            Console.WriteLine("⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠙⠢⡀⠀⠀⠀⡞⠀⠀⠀⠀⢀⡠⠤⠄⠎⠀⠀⠀⠀⠈⠑⡄⠀");
-            Console.WriteLine("⠀⠘⣿⣿⣿⣿⣿⣿⣿⠛⠛⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠣⡄⠀⡇⠀⠀⢀⠔⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⠀⠸⠄");
-            Console.WriteLine("⠀⠀⠘⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀⠀⠉⠛⠿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⡜⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢆⣳⠂⢀⠏⠀⡠⠀⠀⢄⠀⠀⠀⢠⠊⠀⠃⢸⠀⠀⠀⠈⠓");
-            Console.WriteLine("⠀⠀⠀⠘⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢻⠻⢿⣿⠀⠀⠀⠀⠀⠀⠀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣷⡀⢸⡀⠀⠃⠀⡀⠀⠃⠀⠀⣣⡖⠀⠀⢸⠀⠀⠀⠀");
-            Console.WriteLine("⠀⠀⠀⠠⠚⠛⠿⣿⡇⠐⠉⠉⢒⣄⡀⠀⢀⣴⣧⢸⠀⠀⠉⠀⠀⠀⠀⠀⠀⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⢸⠃⠀⠀⠈⠘⠃⠀⢀⣀⣁⣀⠀⠀⠛⠲⡄⠀⠀⠀⠂");
-            Console.WriteLine("⠀⠀⠀⠐⡄⠀⠀⠀⠁⠀⠀⠨⠻⠿⠃⠀⠀⠨⡁⢸⠀⠀⠀⠀⠀⠀⠀⠀⢀⠃⠀⠀⠀⢀⡤⠶⠒⠲⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡎⢆⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⣆⠀⠀⢸⠀⢀⡤⠃⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠈⠢⢀⣀⠀⠀⠀⠀⠀⠀⠀⢄⠤⠤⠂⠀⠱⣄⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠚⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠐⠋⠈⠉⠃⠀⠀⠀⠀⠀⠀⠀⡇⠀⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⡇⠀⠰⣼⠤⠎⠀⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡪⠃⠀⠀⠀⠀⠀⠈⡀⠀⠀⠀⠀⠀⠀⢀⠤⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠃⠀⡇⡀⠀⠀⠀⠘⢿⣿⣿⣿⠟⠀⢀⠜⠀⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⢆⠀⠀⠀⠒⠉⠉⠉⠐⠒⠀⠒⠁⡀⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⡎⠎⣹⣷⠀⠀⠀⠀⠀⠀⡰⣮⡉⠓⡄⠀⠀⠀⠀⠀⠀⡎⠒⠒⠛⠄⣰⣀⣀⡤⠤⡗⠒⢲⣶⣏");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠇⠀⠀⠀⠀⠀⠀⠀⠀⠳⡀⠀⠀⠀⠀⡇⢿⣿⣿⠖⠒⠤⢄⠀⢰⣥⣿⡿⠀⡀⠀⠀⠀⠀⠀⡼⠀⠀⠀⠀⡠⣿⣿⣿⣧⣴⣷⣶⣿⣿⣷⡈⠂⢄⠀⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠡⠀⠀⠀⠀⠀⠀⠀⠀⠀⠜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢈⠶⠶⠟⠃⠘⠛⢻⠉⠀⠀⠀⠀⢳⠘⠿⠿⠔⠺⠛⠽⠟⠒⢂⠜⠀⠀⠀⢀⠊⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠉⠄⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢀⠀⠤⠰⠕⢄⠀⠀⠀⠀⢀⡤⣊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⠀⠀⠀⠀⠀⠀⠘⡄⠀⠀⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡄⠀⠀⡠⠁⢠⣿⣿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠈⠂");
-            Console.WriteLine("⠀⠀⠀⠀⡠⠒⠉⠀⠀⠀⠀⡆⠀⢂⠀⠀⠀⡌⡄⠰⠈⠑⠢⢀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠈⠓⠒⠒⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⢠⠁⠀⢸⠏⠀⢀⡾⠛⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⢀");
-            Console.WriteLine("⠀⠀⠀⡘⠀⠀⠀⠀⠀⠀⠀⢰⠀⠀⠑⡀⠀⠇⠀⠀⠀⠀⠀⠀⠡⡀⠀⠀⠀⠀⠀⠱⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⡨⠀⠀⠆⠀⣠⠋⠀⢀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠁⠀");
-            Console.WriteLine("⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠈⣄⠊⠉⠚⢆⡐⠀⠶⠀⠀⠀⠀⠀⠑⡄⠀⠀⠀⠀⠀⠈⠢⢤⣀⣀⣤⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⠖⠁⠎⠀⠀⢸⣀⡀⠁⢀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀");
-            Console.WriteLine("⠀⠀⡐⠁⠀⠀⠀⠀⠀⠀⠀⠀⢻⠀⠀⠀⠈⠃⠀⠀⠐⠒⠒⠠⡀⢸⠘⠢⡀⠀⠀⠀⠀⠀⠀⠀⢀⠇⡹⠉⠣⡤⣆⣀⣠⠤⡶⢲⠖⢖⠊⠉⠀⠀⠀⠀⠣⠤⣺⠉⠀⢈⠆⠁⠀⢹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀");
-            Console.WriteLine("⠀⠰⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠀⠀⠀⠀⠀⠀⠀⠈⠢⠀⠀⠈⢺⡄⠀⢡⠀⠀⠀⠀⠀⠀⢀⠆⣴⠃⠀⡘⠀⠀⠀⢠⠊⠀⠘⡀⠈⠻⠲⠤⠤⠤⠤⠒⠉⠈⡗⠒⠉⠀⠢⡤⠊⢻⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⢸⠀⠀⠀⠀⢀⡴⠋⡰⠉⡄⠀⠀⠀⠀⡠⠁⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢄⣀⣀⣠⣀⣠⣾⣿⣿⣿⣿⣿⣿⠟⡇⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠓⠄⡐⠒⠺⣀⠀⣀⠴⠊⠀⢀⠇⠀⠈⠢⠤⠄⠊⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⢻⠛⠻⠛⠛⠋⠉⠉⠀⡇⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡈⠀⠁⢰⠀⠀⢠⠀⠷⡀⠀⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠃⡸⠀⠀⠀⠀⠀⠀⢰⠀⠧⣀⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢈⠘⢄⠀⠈⢄⠐⠁⠀⢀⠇⠀⠀⢠⢷⠒⠀⠉⠉⠀⠒⠢⢄⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀⢀⡀⠀⠀⠀⠀⢀⡠⠊⡔⠉⠀⠀⡠⠀⠀⠀⠀⢘⠀⠀⠀⠈⠐⠄⠀");
-            Console.WriteLine("\r\n⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢄⠀⢁⡹⠀⠀⢀⣠⠎⠀⢀⡴⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠇⠀⠀⠀⠀⠙⡒⠒⠒⠒⠉⠀⠀⢄⣀⠠⣒⣀⠀⠀⠀⠀⠈⠢⣀⡀");
-            Console.WriteLine("⠀⠈⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠸⣍⠉⠉⠁⠀⢀⣠⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⢀⣠⠤⠂⠉⠀⠀⠉⢢⠀");
-            Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠁⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀⠀⠀⢱⠤⠔⠂⠉⠁⠀⠀⠀⠀⠀⠀⠀⡸⠀");
-            Console.WriteLine("");
-            Console.WriteLine("=========================================================================================================================");
-            Console.WriteLine("");
-            Console.WriteLine("                                          <<    7조의 대모험이⠀시작됩니다 !⠀  >>");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("                                                                                        아무 키나 눌러주세요.");
-            Console.WriteLine("");
-            Console.WriteLine("=========================================================================================================================");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("");
-
-            Console.WriteLine("");
+            ShowHighlightText("                                                                        Enter를 누르면 시간을 되돌립니다    ...   ");
+            ShowHighlightText("===============================================================================================================");
             Console.WriteLine("");
             Console.ReadLine();
         }
 
         private static void WarriorIntroduce() // 전사 소개
         {
+            Console.Clear();
             Console.WriteLine("⠀⣠⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠳⠦⣄⠀");
             Console.WriteLine("⣸⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ ⠀⠀⠀⠀⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   Hey Wizard...     Can you Please Go Home now?");
@@ -2098,28 +2105,29 @@ namespace Team7SpartaDungeon
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡤⠞⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠈⢧⠀⠀⣰⠃⣠⣄⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢧⠀⢠⠇⠀⢹⢀⡴⠋⠀⡇");
             Console.WriteLine("⠀⢀⡤⣄⠀⠀⠀⠀⠀⠀⠀⠀⣠⡖⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡇⢠⡞⠓⢦⠘⡆⠀⠁⡼⠁⠸⡇⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡆⡞⠀⢀⣾⡞⠀⢠⡾⠟⠛⠛⣻⠇");
             Console.WriteLine("⣀⠈⢧⠈⠳⣄⠀⠀⠀⠀⢠⠖⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⣸⠀⠀⠀⢳⡹⡀⣰⠁⠀⠀⣧⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⠇⠀⠘⣏⠁⠀⠈⢀⣴⣖⠋⠁");
-            Console.WriteLine("=====================================================================================================");
+            ShowHighlightText("=====================================================================================================");
             Console.WriteLine("");
-            Console.WriteLine("                                          전사 (Warrior) ");
+            ShowHighlightText("                                          전사 (Warrior) ");
             Console.WriteLine("");
             Console.WriteLine("");
             Console.WriteLine("               본래 세상에서는 Warrior가 아닌 30대의 평범한 가장이었으나");
             Console.WriteLine("");
             Console.WriteLine("               \"이상한 초록 도마뱀\"과 \"붉은 코의 외계인\"을 만나 인생이 꼬이기 시작합니다.     ");
             Console.WriteLine("");
-            Console.WriteLine("               저 사고뭉치들 때문에 온갖 고통을 겪고 있으며,  ");
+            Console.WriteLine("               저 사고뭉치들 때문에 온갖 고통을 겪고 있지만  ");
             Console.WriteLine("");
             Console.WriteLine("               밀린 전세 대출 이자를 갚기 위해 단련 된 타고난 근성과 ");
             Console.WriteLine("");
             Console.WriteLine("               강철 같은 의지력을 바탕으로 오늘도 고군 분투하고 있습니다. ");
             Console.WriteLine("");
             Console.WriteLine("                                                                               다음 직업 보기.. Enter");
-            Console.WriteLine("=====================================================================================================");
+            ShowHighlightText("=====================================================================================================");
             Console.ReadLine();
         }
 
         private static void WizardIntroduce() // 마법사 소개
         {
+            Console.Clear();
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⡰⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢄⠀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⢰⠁⠀⠀⠀⠀⠀⠀       ⠀⠀⠀⠀   ⠀⠀I ~   C# !⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀    ⠀    ⠈⡆");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡇⠀");
@@ -2151,9 +2159,9 @@ namespace Team7SpartaDungeon
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠾⠏⡷⠶⡖⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠶⣤⡀");
             Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⣼⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠢");
             Console.WriteLine("");
-            Console.WriteLine("=====================================================================================================");
+            ShowHighlightText("=====================================================================================================");
             Console.WriteLine("");
-            Console.WriteLine("                                         마법사 (Wizard) ");
+            ShowHighlightText("                                         마법사 (Wizard) ");
             Console.WriteLine("");
             Console.WriteLine("");
             Console.WriteLine("               본인이 1억년 전의 공룡이라는 소리를 하는 이상한 녹색 도마뱀.");
@@ -2166,12 +2174,13 @@ namespace Team7SpartaDungeon
             Console.WriteLine("");
             Console.WriteLine("");
             Console.WriteLine("                                                                          다음 직업 보기.. Enter");
-            Console.WriteLine("=====================================================================================================");
+            ShowHighlightText("=====================================================================================================");
             Console.ReadLine();
         }
 
         private static void MusicianIntroduce() // 음악가 소개
         {
+            Console.Clear();
             Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⣀⣀⣀⣤⣤⣄⣀⠀⠀");
             Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠶⠞⠛⠋⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠈⠉⠛⠓⢦⣄⡀⠀⠀");
             Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠾⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠳⣄⠀");
@@ -2205,9 +2214,9 @@ namespace Team7SpartaDungeon
             Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠋⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣄");
             Console.WriteLine(" ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡄⠀⠀");
             Console.WriteLine("");
-            Console.WriteLine("=====================================================================================================");
+            ShowHighlightText("=====================================================================================================");
             Console.WriteLine("");
-            Console.WriteLine("                                         음악가 (Musician) ");
+            ShowHighlightText("                                         음악가 (Musician) ");
             Console.WriteLine("");
             Console.WriteLine("");
             Console.WriteLine("               자신이 'Kan-Ta Pyah'(칸-타 퍄) 라는 곳에서 왔다는 주장을 하는 붉은 코의 외계인..");
@@ -2219,8 +2228,8 @@ namespace Team7SpartaDungeon
             Console.WriteLine("               조금이라도 수틀리면 연주하던 악기로 '시간을 되돌려' 버리는 무서운 능력을 가지고 있습니다.");
             Console.WriteLine("");
             Console.WriteLine("");
-            Console.WriteLine("                                                                               다음 직업 보기.. Enter");
-            Console.WriteLine("=====================================================================================================");
+            Console.WriteLine("                                                                               직업 선택으로 >> Enter");
+            ShowHighlightText("=====================================================================================================");
             Console.ReadLine();
         }
 
