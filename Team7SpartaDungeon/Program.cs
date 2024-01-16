@@ -349,16 +349,37 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("⠀⠈⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠸⣍⠉⠉⠁⠀⢀⣠⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⢀⣠⠤⠂⠉⠀⠀⠉⢢⠀");
                 Console.WriteLine("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠁⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀⠀⠀⢱⠤⠔⠂⠉⠁⠀⠀⠀⠀⠀⠀⠀⡸⠀");
                 Console.WriteLine("");
-                ShowHighlightText("=======================================================================================================================");
+                ShowHighlightText("==================================================================================================================");
                 Console.WriteLine("");
                 ShowHighlightText("                                    <<    7조의 대모험이⠀시작됩니다 !⠀  >>");
                 Console.WriteLine("");
-                Console.WriteLine("                                             직업을  선택 해주세요!");
-                Console.WriteLine("");               
                 Console.WriteLine("");
-                Console.WriteLine("                    1. 전사                        2. 마법사                    3. 음악가       ");
+                Console.WriteLine("                                                                                                 Press Any Key");                                                                                        
+                ShowHighlightText("=================================================================================================================");
+                Console.ReadKey();
+            }
+
+            public void PlayGame() // 게임 시작 메서드
+            {
+                ItemTable();
+                dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
+                dungeon.Add(siegeMinion);
+                dungeon.Add(voidBug);
+                dungeon.Add(minion);
+                dungeon.Add(siegeMinion);
+                dungeon.Add(voidBug);
+                dungeon.Add(minion);
+                dungeon.Add(siegeMinion);
+                dungeon.Add(voidBug);
+
+                ShopItemTable();
+
+                Console.Clear();
+                PlayStartLogo2(); // 직업 선택씬
                 Console.WriteLine("");
-                ShowHighlightText("=======================================================================================================================");
+                ShowHighlightText("                                           직업을  선택 해주세요!");
+                Console.WriteLine("");
+                Console.WriteLine("                    1. 전사                      2. 마법사                   3. 음악가       ");
                 switch (ChoiceInput(1, 3)) // 직업 선택
                 {
                     case 1:
@@ -385,34 +406,13 @@ namespace Team7SpartaDungeon
                         player.AvailableSkill.Add(true);
                         break;
                 }
-            }
-
-            public void PlayGame() // 게임 시작 메서드
-            {
-                ItemTable();
-                dungeon.Add(minion);                 // 던전에서 출현할 몬스터 추가
-                dungeon.Add(siegeMinion);
-                dungeon.Add(voidBug);
-                dungeon.Add(minion);
-                dungeon.Add(siegeMinion);
-                dungeon.Add(voidBug);
-                dungeon.Add(minion);
-                dungeon.Add(siegeMinion);
-                dungeon.Add(voidBug);
-
-                ShopItemTable();
-
-                Console.Clear();
-                PlayStartLogo2(); // 직업 선택씬
-
-
-                ShowHighlightText(" 원하시는 이름을 설정해주세요. ");
+                ShowHighlightText(" 원하시는 이름을 설정해주세요! \n");
                 player.Name = Console.ReadLine();    // 플레이어 이름 입력
                 while (true)
                 {
                     Console.Clear();
 
-                    ShowHighlightText(" 반갑습니다! \n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3. 인벤토리\n4. 상점\n5. 저장 / 불러오기\n");
+                    Console.WriteLine($" {player.Name} 님 반갑습니다! \n이제 전투를 시작할 수 있습니다.\n\n1. 상태 보기\n2. 전투 시작( 현재 진행 : " + (dungeonFloor + 1) + " 층 )\n3. 인벤토리\n4. 상점\n5. 저장 / 불러오기\n");
                     switch (ChoiceInput(1, 5)) // 최초 선택지
                     {
                         case 1:
