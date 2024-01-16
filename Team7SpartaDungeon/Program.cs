@@ -417,7 +417,7 @@ namespace Team7SpartaDungeon
                     player.Mp = player.MaxMp;
 
 
-                    if (3 == player.Level)
+                    if (!(player is Musician) && 3 == player.Level)
                     {
                         player.AvailableSkill[1] = true;
                         if (player is Warrior) Console.WriteLine("\n\n스킬 \"더블 스트라이크\"를 사용할 수 있습니다.");
@@ -1252,7 +1252,7 @@ namespace Team7SpartaDungeon
                     //---------------- 음악가 스킬 -----------------------------------------------------------------------------------------------------------------------------------------------
                     if (player is Musician && use == 1 && player.AvailableSkill[use - 1]) // 음악가 1번 스킬 - 타임 코스모스, 그냥 냅다 게임 시작 페이지로 돌아갑니다.
                     {
-                        if (50 >= player.Mp)
+                        if (50 < player.Mp)
                         {
                             player.Mp -= 50;
 
