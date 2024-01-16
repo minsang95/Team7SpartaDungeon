@@ -201,7 +201,7 @@ namespace Team7SpartaDungeon
             public void PlayerInventoryList(bool withNumber, int idx = 0)
             {
 
-
+                Console.Write("-");
                 if (withNumber)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkMagenta;
@@ -563,7 +563,6 @@ namespace Team7SpartaDungeon
                 Console.WriteLine("");
                 Console.WriteLine("[아이템 목록]");
 
-                Console.Write("-");
                 if (haveItem.Count <= 0 && Item.shopItemCount <= 0)
                 {
                     Console.WriteLine("가진 아이템이 없습니다.");
